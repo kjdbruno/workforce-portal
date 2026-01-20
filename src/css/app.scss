@@ -1,0 +1,421 @@
+// app global css in SCSS form
+// app global css in SCSS form
+@font-face {
+    font-family: Montserrat;
+    src: url(./Font/Montserrat-VariableFont_wght.ttf);
+}
+* {
+    font-family: 'Montserrat';
+    letter-spacing: .3mm;
+}
+
+.border
+{
+    border: 1px solid rgba(0, 0, 0, 0.24);
+}
+
+::-webkit-scrollbar {
+    display: none;
+}
+
+body {
+    // background: linear-gradient(to bottom, #e8edf7, #d5deee); /* light to slightly darker gradient */
+    margin: 0;
+    background-color: $accent;
+}
+
+.radius-xl {
+    border-radius: 35px;
+}
+
+.radius-lg {
+    border-radius: 20px;
+}
+
+.radius-md {
+    border-radius: 15px;
+}
+
+.radius-sm {
+    border-radius: 10px;
+}
+
+.radius-xs {
+    border-radius: 5px;
+}
+
+.dialog .q-dialog__inner
+{
+    padding: 0px !important;
+}
+
+.q-dialog__inner .dialog-card {
+  width: 90vw;
+  max-width: 100%;
+}
+
+//input
+.q-field--outlined .q-field__control:after,
+.q-field--outlined.q-field--highlighted .q-field__control:after
+{
+  border-width: 1px !important;
+}
+
+.q-field--outlined .q-field__control:hover::before
+{
+    border: 1px solid rgba(0, 0, 0, 0.24);
+}
+
+.swal2-container
+{
+    z-index: 6001;
+}
+
+.q-field
+{
+    padding: 0;
+}
+
+.btn
+{
+    width: 125px !important;
+}
+
+.btn-1
+{
+    width: 150px !important;
+}
+
+.btn-2
+{
+    width: 175px !important;
+}
+
+.btn-3
+{
+    width: 200px !important;
+}
+
+/* Custom grid container */
+.card-grid {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: flex-start; /* or center if you prefer */
+    gap: 10px; /* space between cards */
+    /* padding: 10px; */
+}
+
+/* Wrapper for animation */
+.card-anim-wrapper {
+    opacity: 0;
+    transform: translateY(18px);
+    animation: fadeSlideUp 0.52s cubic-bezier(.2,.8,.2,1) forwards;
+}
+
+/* Fixed card size */
+.card-anim-wrapper .card {
+    width: 225px;
+    height: 250px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    border-radius: 10px;
+    overflow: hidden;
+
+    transform: translateY(0) scale(1);
+    transition: transform 220ms cubic-bezier(.2,.8,.2,1), 
+                box-shadow 220ms ease;
+    will-change: transform, box-shadow;
+}
+
+/* Hover zoom */
+.card-anim-wrapper .card-hover-animate:hover {
+    transform: translateY(-4px) scale(1);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.12);
+}
+
+/* Entrance animation */
+@keyframes fadeSlideUp {
+    0% {
+        opacity: 0;
+        transform: translateY(28px);
+    }
+    60% {
+        opacity: 1;
+        transform: translateY(-6px);
+    }
+    100% {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.q-dialog.profile-dialog .dialog-card {
+    width: 30vw;
+    max-width: 100%;
+}
+
+.inner-card-anim-wrapper {
+  opacity: 0;
+  transform: scale(0.9);
+  animation: scaleUpFadeIn 0.52s cubic-bezier(.2,.8,.2,1) forwards;
+}
+
+/* ✨ New animation for scale + fade */
+@keyframes scaleUpFadeIn {
+  0% {
+    opacity: 0;
+    transform: scale(0.9);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+/* Fixed card size */
+.inner-card-anim-wrapper .card {
+    width: 200px;
+    height: 225px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  border-radius: 10px;
+  overflow: hidden;
+  position: relative;
+  transform: translateY(0) scale(1);
+  transition: transform 220ms cubic-bezier(.2,.8,.2,1),
+              box-shadow 220ms ease;
+  will-change: transform, box-shadow;
+  border: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+/* Hover zoom */
+.inner-card-anim-wrapper .card-hover-animate:hover {
+  transform: scale(1.05);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.12);
+}
+
+/* ✅ Active card glow */
+.card--active {
+  box-shadow:
+    rgba(250, 103, 36, 0.15) 0px 6px 18px 0px,
+    rgba(250, 103, 36, 0.25) 0px 0px 8px 1px;
+  transform: scale(1.05);
+  background-color: #FDF3E9;
+}
+
+/* ✅ Checkmark overlay */
+.checkmark-overlay {
+  position: absolute;
+  top: 0px;
+  left: 0px;
+  background-color: transparent;
+  border-radius: 50%;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+/* Hide radio input */
+.hidden-radio {
+  opacity: 0;
+  position: absolute;
+  pointer-events: none;
+}
+
+.inner1-card-anim-wrapper {
+  opacity: 0;
+  transform: scale(0.9);
+  animation: scaleUpFadeIn 0.52s cubic-bezier(.2,.8,.2,1) forwards;
+}
+
+/* Fixed card size */
+.inner1-card-anim-wrapper .card {
+    width: 200px;
+    height: 100px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  border-radius: 10px;
+  overflow: hidden;
+  position: relative;
+  transform: translateY(0) scale(1);
+  transition: transform 220ms cubic-bezier(.2,.8,.2,1),
+              box-shadow 220ms ease;
+  will-change: transform, box-shadow;
+  border: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+/* Hover zoom */
+.inner1-card-anim-wrapper .card-hover-animate:hover {
+  transform: scale(1.05);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.12);
+}
+
+//
+.inner2-card-anim-wrapper {
+  opacity: 0;
+  transform: scale(0.9);
+  animation: scaleUpFadeIn 0.52s cubic-bezier(.2,.8,.2,1) forwards;
+}
+
+/* Fixed card size */
+.inner2-card-anim-wrapper .card {
+  width: 300px;
+  height: 100px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  border-radius: 10px;
+  overflow: hidden;
+  position: relative;
+  transform: translateY(0) scale(1);
+  transition: transform 220ms cubic-bezier(.2,.8,.2,1),
+              box-shadow 220ms ease;
+  will-change: transform, box-shadow;
+  border: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+/* Hover zoom */
+.inner2-card-anim-wrapper .card-hover-animate:hover {
+  transform: scale(1.05);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.12);
+}
+
+.disabled-card {
+  opacity: 0.5;
+  pointer-events: none;
+}
+
+.round-card-grid {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: flex-start; /* or center if you prefer */
+    gap: 2px; /* space between cards */
+    /* padding: 10px; */
+}
+
+
+.round-card-anim-wrapper {
+  opacity: 0;
+  transform: scale(0.9);
+  animation: scaleUpFadeIn 0.52s cubic-bezier(.2,.8,.2,1) forwards;
+}
+
+/* Fixed card size */
+.round-card-anim-wrapper .card {
+  width: 50px;
+  height: 50px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  border-radius: 50%;
+  overflow: hidden;
+  position: relative;
+  transform: translateY(0) scale(1);
+  transition: transform 220ms cubic-bezier(.2,.8,.2,1),
+              box-shadow 220ms ease;
+  will-change: transform, box-shadow;
+  border: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+/* Hover zoom */
+.round-card-anim-wrapper .card-hover-animate:hover {
+  transform: scale(1.05);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.12);
+}
+
+.iframe-container {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  overflow: hidden; /* Prevent scrollbars */
+}
+
+.iframe-container iframe {
+  position: absolute;
+  top: 0;
+  left: 0;
+  border: none;
+  width: 100%;
+  height: 100%;
+  overflow: hidden; /* Hide internal scrollbars */
+}
+
+.error-overlay {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  background-color: transparent;
+}
+
+// CIRCLE
+.filter-inline {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+.filter-inline .q-btn .q-btn__content
+{
+  font-size: 0.75em;
+}
+
+.filter-inline .active
+{
+  border: 1px solid $primary;
+  background-color: $primary;
+  color: #FFF;
+}
+
+.filter-inline .inactive
+{
+  border: 1px solid $primary;
+  background-color: #FFF;
+  color: $primary;
+}
+
+.month-wrapper {
+    display: flex;
+    gap: 2px;
+}
+
+.month-circle {
+    width: 42px;
+    height: 42px;
+    border-radius: 50%;
+    border: 1px solid rgba(0, 0, 0, 0.24);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    color: $dark;
+}
+
+.month-circle.active {
+    background-color: $primary;
+    color: #fff;
+    border-color: $primary;
+    font-weight: 600;
+}
+
+.month-label {
+  font-size: 12px;
+  font-weight: normal;
+}
+
+.q-field__label
+{
+  font-size: 0.85em !important;
+  top: 20px !important;
+
+}
+
+.custom-border
+{
+  box-shadow: rgba(0, 0, 0, 0.05) 0px 0px 0px 1px !important;
+}

@@ -1,0 +1,1 @@
+import{Y as a}from"./index-DYF0sKPI.js";const c=a("feedbackStore",{state:()=>({component:null,details:null,year:"All"}),getters:{},actions:{},persist:!0}),l=(e,o)=>{const t=e.__vccOpts||e;for(const[r,s]of o)t[r]=s;return t};export{l as _,c as u};
