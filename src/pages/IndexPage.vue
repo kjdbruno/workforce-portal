@@ -2,97 +2,38 @@
     <q-page class="full-height flex flex-center">
         <q-card class="justify-center items-center no-shadow q-pa-xl radius-md border" style="width: 600px;">
             <q-card-section>
-                <div class="text-center">
+                <!-- <div class="text-center">
                     <div v-html="indexStore.brand"/>
-                </div>
+                </div> -->
             </q-card-section>
             <q-card-section class="text-center">
                 <div class="card-grid">
-                    <div class="card-anim-wrapper" :style="{ animationDelay: `120ms` }">
-                        <q-card key="data-add" class="card card-hover-animate flex flex-center q-pa-md no-shadow cursor-pointer radius-sm" >
+                    <div v-for="(data, index) in tabs" :key="`data-${data.id}`" class="card-anim-wrapper" :style="{ animationDelay: `${index * 100}ms` }">
+                        <q-card @click="openDialog(data.dialog)" class="card card-menu card-hover-animate q-pa-md no-shadow cursor-pointer radius-sm" >
                             <q-card-section class="text-center">
-                                <div class="text-subtitle1 text-uppercase q-mt-xs">biometric</div>
-                            </q-card-section>
-                        </q-card>
-                    </div>
-                    <div class="card-anim-wrapper" :style="{ animationDelay: `120ms` }">
-                        <q-card key="data-add" class="card card-hover-animate flex flex-center q-pa-md no-shadow cursor-pointer radius-sm" >
-                            <q-card-section class="text-center">
-                                <div class="text-subtitle1 text-uppercase q-mt-xs">leave</div>
+                                <div class="text-body2 text-grey text-uppercase">{{ data.label }}</div>
                             </q-card-section>
                         </q-card>
                     </div>
                 </div>
             </q-card-section>
         </q-card>
+        <biometric-dialog v-model="activeDialog" dialog-name="BiometricDialog"/>
+        <leave-dialog v-model="activeDialog" dialog-name="LeaveDialog"/>
     </q-page>
 </template>
 
 <script setup>
 import { ref, reactive, onMounted } from 'vue';
-import { useRouter } from 'vue-router';
-import { useQuasar } from 'quasar'
-import { useAuthStore } from 'src/stores/auth-store';
-import { useIndexStore } from 'src/stores/index-store';
-import { api } from 'src/boot/axios';
-
-const $q = useQuasar();
-const router = useRouter();
-const authStore = useAuthStore();
-const indexStore = useIndexStore();
-
-const username = ref('');
-const password = ref('');
-
-const showPassword = ref(false);
-
-const loading = ref(false);
-
-const formErrors = reactive({
-    username: { msg: null, type: null },
-    password: { msg: null, type: null }
-});
-
-const errors = ref([]);
-
-const userValidator = () => {
-    let isError = false;
-    if (username.value == '' || username.value == '') {
-        formErrors.username.msg = 'Username is required!';
-        formErrors.username.type = true;
-        isError = true;
-    } else {
-        formErrors.username.msg = null;
-        formErrors.username.type = null;
-    }
-    if (password.value == '' || password.value == null) {
-        formErrors.password.msg = 'Password is required!'
-        formErrors.password.type = true;
-        isError = true;
-    } else if (password.value.length > 0 && password.value.length < 4) {
-        formErrors.password.msg = 'Minimum password length is 4!';
-        formErrors.password.type = true;
-        isError = true;
-    } else {
-        formErrors.password.msg = null;
-        formErrors.password.type = null;
-    }
-    return isError;
-}
-
-const login = async () => {
-    const isError = userValidator();
-    if (isError) return false;
-    loading.value = true;
-    try {
-        await authStore.login(username.value, password.value);
-        router.push('/home');
-        loading.value = false;
-    } catch (e) {
-        loading.value = false;
-        errors.value = e.response.data.errors;
-        console.log(e.response.data.errors);
-    }
+import BiometricDialog from './BiometricDialog.vue';
+import LeaveDialog from './leaveDialog.vue';
+const tabs = [
+    { label: 'biometric', dialog: 'BiometricDialog'},
+    { label: 'leave', dialog: 'LeaveDialog'}
+]
+const activeDialog = ref(null)
+const openDialog = (dialogName) => {
+    activeDialog.value = dialogName
 }
 </script>
 <style scoped lang="css">
