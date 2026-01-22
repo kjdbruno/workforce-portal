@@ -1,17 +1,17 @@
 <template>
-    <q-dialog v-model="isOpen" full-height position="right" persistent square class="dialog" @before-show="PopulateData()">
+    <q-dialog v-model="isOpen" persistent class="dialog" @before-show="PopulateData(); ">
         <q-card class="dialog-card column full-height">
             <q-card-section class="q-pa-lg">
                 <div class="text-h6 text-uppercase">biometric</div>
             </q-card-section>
             <q-separator inset />
             <q-card-section class="col q-pa-lg scroll">
-                <SimpleVueCamera ref="camera" />
+                <SimpleVueCamera ref="camera"/>
             </q-card-section>
             
-            <q-card-actions class="q-pa-lg bg">
+            <q-card-actions class="q-pa-lg bg" align="center">
                 <div class="q-gutter-sm">
-                    <q-btn unelevated size="md" color="primary" class="btn text-capitalize" label="save" @click="SaveProfile()" />
+                    <q-btn unelevated size="md" color="primary" class="btn text-capitalize" label="scan" @click="ScanFace()" />
                     <q-btn unelevated size="md" color="primary" class="btn text-capitalize" label="discard" @click="() => { emit('update:modelValue', null); }" outline/>
                 </div>
             </q-card-actions>
@@ -28,6 +28,7 @@
 import { ref, onMounted, onBeforeUnmount, onBeforeMount, watch, reactive, computed } from 'vue';
 import { api } from 'src/boot/axios';
 import moment from 'moment';
+import Swal from 'sweetalert2';
 import { Toast } from 'src/boot/sweetalert'; 
 import { useEmployeeStore } from 'src/stores/employee-store'
 const EmployeeStore = useEmployeeStore();
@@ -132,7 +133,77 @@ async function scanFace() {
   }
 }
 
+const employee = ref([]);
+const isMatch = ref(false);
+
+const ScanFace = async () => {
+    SubmitLoading.value = true;
+    const result = await detectDescriptor();
+
+    try {
+        const response = await api.post(`/portal/biometric`, {
+            descriptor: Array.from(result.descriptor)
+        });
+        const { match, employee, dtr, distance } = response.data;
+        if (!match) {
+            Swal.fire({
+                icon: "error",
+                title: "Face Not Recognized",
+                text: "No matching employee found in the system."
+            });
+        } else {
+            const fullName = `${employee.first_name} ${employee.middle_name ?? ''} ${employee.last_name}`.toUpperCase();
+            const position = employee.employment?.position?.name || 'N/A';
+
+            // 🕒 Format Date & Time
+            const rawDateTime = new Date(`${dtr.date}T${dtr.time}`);
+
+            const formattedDate = rawDateTime.toLocaleDateString('en-PH', {
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric'
+            });
+
+            const formattedTime = rawDateTime.toLocaleTimeString('en-PH', {
+                hour: '2-digit',
+                minute: '2-digit',
+                second: '2-digit',
+                hour12: true
+            });
+
+            Swal.fire({
+                icon: 'success',
+                title: 'LOG RECORDED',
+                html: `
+                    <div style="font-size:1.25em;font-weight:bold;">
+                        ${fullName}
+                    </div>
+                    <div style="font-size:1em; margin-top:5px;">
+                        ${formattedDate} @ ${formattedTime}
+                    </div>
+                `
+            });
+        }
+        emit('update:modelValue', null);
+    } catch (e) {
+        if (e.response && e.response.data) {
+            applyBackendErrors(e.response.data);
+            Toast.fire({
+                icon: "error",
+                html: `
+                    <div class="text-h6 text-bold text-uppercase">Request Failed</div>
+                    <div class="text-caption">Something went wrong.</div>
+                `
+            })
+        }
+    } finally {
+        SubmitLoading.value = false;
+    }
+}
+
 const PopulateData = async (app) => {
     await loadModels();
+    employee.value = [];
+    isMatch.value = false;
 }
 </script>
