@@ -9,6 +9,7 @@
                 </q-card>
             </div>
         </div>
+        <time-in-dialog v-model="activeDialog" dialog-name="TimeInDialog"/>
         <biometric-dialog v-model="activeDialog" dialog-name="BiometricDialog"/>
         <leave-dialog v-model="activeDialog" dialog-name="LeaveDialog"/>
         <div class="bg-overlay"></div>
@@ -19,8 +20,10 @@
 import { ref, reactive, onMounted } from 'vue';
 import BiometricDialog from './BiometricDialog.vue';
 import LeaveDialog from './LeaveDialog.vue';
+import TimeInDialog from './TimeInDialog.vue';
 const tabs = [
-    { label: 'biometric', dialog: 'BiometricDialog'},
+    { label: 'time in', dialog: 'TimeInDialog'},
+    { label: 'time out', dialog: 'BiometricDialog'},
     { label: 'file a leave', dialog: 'LeaveDialog'}
 ]
 const activeDialog = ref(null)
