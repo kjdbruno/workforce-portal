@@ -22,9 +22,9 @@ import BiometricDialog from './BiometricDialog.vue';
 import LeaveDialog from './LeaveDialog.vue';
 import TimeInDialog from './TimeInDialog.vue';
 const tabs = [
-    { label: 'time in', dialog: 'TimeInDialog'},
-    { label: 'time out', dialog: 'BiometricDialog'},
-    { label: 'file a leave', dialog: 'LeaveDialog'}
+    { label: 'biometric', dialog: 'BiometricDialog'},
+    { label: 'file a leave', dialog: 'LeaveDialog'},
+    { label: 'track my leave', dialog: 'LeaveDialog'}
 ]
 const activeDialog = ref(null)
 const openDialog = (dialogName) => {

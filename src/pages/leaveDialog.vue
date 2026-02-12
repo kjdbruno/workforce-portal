@@ -4,83 +4,84 @@
             <q-card-section class="q-pa-lg">
                 <div class="text-h6 text-uppercase">file a leave</div>
             </q-card-section>
-            <q-separator inset />
-            <q-card-section class="col q-pa-lg scroll">
-                <SimpleVueCamera ref="camera" v-if="!isMatch"/>
-                <div class="text-center" v-else>
-                    <img :src="FormatAvatar(employee?.photo?.avatar)" alt="Profile" class="profile-img" />
-                    <div class="q-mt-md q-mb-lg">
-                        <div class="text-h5 text-uppercase">{{ FormatName(employee) }}</div>
-                        <div class="text-body1 text-uppercase">{{ employee?.employment?.position?.name }}</div>
+            <q-card-section class="col q-pa-none" v-if="!isMatch">
+                <SimpleVueCamera ref="camera" />
+            </q-card-section>
+            <q-card-section class="col q-pa-lg" v-else>
+                <div class="row q-col-gutter-lg">
+                    <div class="col-4">
+                        <q-card key="data-add" class="card card-profile no-shadow radius-sm q-mb-sm q-pb-lg">
+                            <div class="cover-photo">
+                                <img :src="randomCover" alt="Cover"/>
+                            </div>
+                            <q-card-section class="text-center profile-section">
+                                <img :src="FormatAvatar(employee?.photo?.avatar)" alt="Profile" class="profile-img" />
+                            </q-card-section>
+                            <q-card-section class="text-center q-pt-sm">
+                                <div class="text-caption text-uppercase text-white">{{ employee?.employment?.employee_no }}</div>
+                                <div class="text-h5 text-uppercase text-bold text-white">{{ FormatName(employee) }}</div>
+                                <div class="text-body1 text-uppercase text-white">{{ employee?.employment?.position?.name }}</div>
+                                <div class="text-caption text-uppercase text-white">{{ employee?.employment?.employment_status }}</div>
+                            </q-card-section>
+                        </q-card>
                     </div>
-                    <div class="flex flex-center q-gutter-xs q-mb-md">
-                        <div>
-                            <div class="text-caption text-uppercase q-mb-xs" :class="Errors.typeid.type ? 'text-negative' : 'text-grey'">{{ Errors.typeid.type ? Errors.typeid.message : 'leave type' }}</div>
-                            <q-select 
-                                outlined 
-                                v-model="typeid" 
-                                emit-value 
-                                map-options 
-                                use-input 
-                                input-debounce="300" 
-                                :options="filteredLeaveTypes" 
-                                @filter="filterLeaveTypeFn" 
-                                :error="Errors.typeid.type"
-                                dropdown-icon="keyboard_arrow_down"
-                                :no-error-icon="true"
-                                label="Choose Leave Type"
-                            >
-                                <template v-slot:no-option>
-                                    <q-item>
-                                        <q-item-section class="text-italic text-grey">
-                                            No options
-                                        </q-item-section>
-                                    </q-item>
-                                </template>
-                                <template v-slot:option="scope">
-                                    <q-item v-bind="scope.itemProps">
-                                        <q-item-section>
-                                            <q-item-label>{{ $CapitalizeWords(scope.opt.label) }}</q-item-label>
-                                        </q-item-section>
-                                    </q-item>
-                                </template>
-                            </q-select>
+                    <div class="col">
+                        <div v-if="step === 0">
+                            <div class="text-caption text-uppercase q-mb-sm" :class="Errors.typeid.type ? 'text-negative text-italic' : 'text-grey'">{{ Errors.typeid.type ? Errors.typeid.msg : 'leave type' }}</div>
+                            <div class="card-grid">
+                                <div class="inner-card-anim-wrapper" :style="{ animationDelay: `100ms` }">
+                                    <q-card class="card card-menu card-hover-animate q-pa-md no-shadow cursor-pointer radius-sm q-mr-xs q-mb-xs" v-if="!leavetypes.length">
+                                        <q-card-section class="text-center">
+                                            <div class="text-caption text-dark text-uppercase">no record found</div>
+                                        </q-card-section>
+                                    </q-card>
+                                </div>
+                                <div v-for="(data, index) in leavetypes" :key="`data-${data.id}`" class="inner-card-anim-wrapper" :style="{ animationDelay: `${index * 100}ms` }" v-if="leavetypes.length">
+                                    <q-card @click="() => { typeid = data.id }" class="card card-menu card-hover-animate q-pa-md no-shadow cursor-pointer radius-sm q-mr-xs q-mb-xs" :class="{ 'card--active': typeid === data.id }">
+                                        <q-card-section class="text-center">
+                                            <div class="text-caption text-dark text-uppercase">{{ data.name }}</div>
+                                        </q-card-section>
+                                        <div class="absolute-left">
+                                            <q-radio v-model="typeid" :val="data.id" checked-icon="task_alt" unchecked-icon="panorama_fish_eye" size="xs" />
+                                        </div>
+                                    </q-card>
+                                </div>
+                            </div>
                         </div>
-                        <div>
-                            <div class="text-caption text-uppercase q-mb-xs" :class="Errors.datestart.type ? 'text-negative' : 'text-grey'">{{ Errors.datestart.type ? Errors.datestart.message : 'date start' }}</div>
-                            <q-input outlined v-model="datestart" label="Enter Date" :error="Errors.datestart.type" no-error-icon>
-                                <q-popup-proxy cover transition-show="scale" transition-hide="scale" ref="popup" class="no-shadow custom-border radius-sm">
-                                    <q-date v-model="datestart" mask="YYYY-MM-DD" @update:model-value="() => { popup.hide() }" />
-                                </q-popup-proxy>
-                            </q-input>
-                        </div>
-                        <div>
-                            <div class="text-caption text-uppercase q-mb-xs" :class="Errors.dateend.type ? 'text-negative' : 'text-grey'">{{ Errors.dateend.type ? Errors.dateend.message : 'date end' }}</div>
-                            <q-input outlined v-model="dateend" label="Enter Date" :error="Errors.dateend.type" no-error-icon>
-                                <q-popup-proxy cover transition-show="scale" transition-hide="scale" ref="popup" class="no-shadow custom-border radius-sm">
-                                    <q-date v-model="dateend" mask="YYYY-MM-DD" @update:model-value="() => { popup.hide() }" />
-                                </q-popup-proxy>
-                            </q-input>
-                        </div>
-                        <div>
-                            <div class="text-caption text-uppercase q-mb-xs" :class="Errors.reason.type ? 'text-negative' : 'text-grey'">{{ Errors.reason.type ? Errors.reason.message : 'reason' }}</div>
-                            <q-input outlined v-model="reason" :error="Errors.reason.type" no-error-icon label="Enter Reason"></q-input>
+                        <div v-if="step === 1">
+                            <div class="q-mb-md">
+                                <div class="text-caption text-uppercase" :class="Errors.date.type ? 'text-negative text-italic' : 'text-grey'">{{ Errors.date.type ? Errors.date.msg : 'date range' }}</div>
+                                <q-date v-model="date" range @update:model-value="() => { popup.hide(); } " class="no-shadow custom-border full-width"/>
+                            </div>
+                            <div>
+                                <div class="text-caption text-uppercase" :class="Errors.reason.type ? 'text-negative text-italic' : 'text-grey'">{{ Errors.reason.type ? Errors.reason.msg : 'reason' }}</div>
+                                <q-input 
+                                    v-model="reason" 
+                                    outlined 
+                                    type="textarea" 
+                                    :error="Errors.reason.type"
+                                    :no-error-icon="true"
+                                    label="Enter Reason"
+                                />
+                            </div>
                         </div>
                     </div>
                 </div>
             </q-card-section>
             
-            <q-card-actions class="q-pa-lg bg" align="center">
+            <q-card-actions class="q-pa-lg bg">
                 <div class="q-gutter-sm">
-                    <q-btn unelevated size="md" color="primary" class="btn text-capitalize" label="scan" @click="ScanFace()" v-if="!isMatch"/>
-                    <q-btn unelevated size="md" color="primary" class="btn text-capitalize" label="save" @click="Save()" v-else/>
+                    <q-btn v-if="!isMatch" unelevated size="md" color="primary" class="btn text-capitalize" label="scan" @click="ScanFace()" />
+                    <q-btn v-if="isMatch && step > 0" unelevated size="md" color="primary" class="btn text-capitalize" label="previous" @click="() => { PreviousStep() }" />
+                    <q-btn v-if="isMatch && step < totalSteps - 1" unelevated size="md" color="primary" class="btn text-capitalize" label="next" @click="() => { NextStep() }" />
+                    <q-btn v-if="isMatch && step === totalSteps - 1" unelevated size="md" color="primary" class="btn text-capitalize" label="save" @click="Save" />
                     <q-btn unelevated size="md" color="primary" class="btn text-capitalize" label="discard" @click="() => { emit('update:modelValue', null); }" outline/>
                 </div>
             </q-card-actions>
-            <q-inner-loading :showing="SubmitLoading">
+            <q-inner-loading :showing="SubmitLoading" dark>
                 <div class="text-center">
-                    <q-spinner-puff size="md"/>
-                    <div class="text-caption text-grey text-uppercase q-mt-xs">we're working on it!</div>
+                    <q-spinner-puff size="xl" color="white"/>
+                    <div class="text-h6 text-white text-uppercase q-mt-xs">we're working on it!</div>
                 </div>
             </q-inner-loading>
         </q-card>
@@ -217,18 +218,14 @@ const FormatName = (profile) => {
 }
 
 const typeid = ref('');
-const datestart = ref('');
-const dateend = ref('');
+const date = ref('');
 const reason = ref('');
 
 const Errors = reactive({
     typeid: { 
         type: null, message: ''
     },
-    datestart: { 
-        type: null, message: ''
-    },
-    dateend: { 
+    date: { 
         type: null, message: ''
     },
     reason: { 
@@ -236,68 +233,58 @@ const Errors = reactive({
     }
 });
 
-const Validations = () => {
+const failToast = () =>
+    Toast.fire({
+        icon: "error",
+        html: `
+        <div class="text-h6 text-bold text-uppercase">Request Failed</div>
+        <div class="text-caption">Something went wrong.</div>
+        `
+    })
 
-    let isError = false;
+const setErr = (key, msg = 'required') => (Errors[key].type = true, Errors[key].msg = msg, true)
+const clearErr = (key) => (Errors[key].type = null, Errors[key].msg = '', false)
 
-    if (!typeid.value) {
-        Errors.typeid.type = true;
-        Errors.typeid.message = ('leave type is required!')
-        isError = true
-    } else {
-        Errors.typeid.type = null
-    }
-    if (!datestart.value) {
-        Errors.datestart.type = true;
-        Errors.datestart.message = ('date start is required!')
-        isError = true
-    } else {
-        Errors.datestart.type = null
-    }
-    if (!dateend.value) {
-        Errors.dateend.type = true;
-        Errors.dateend.message = ('date end is required!')
-        isError = true
-    } else {
-        Errors.dateend.type = null
-    }
-    if (!reason.value) {
-        Errors.reason.type = true;
-        Errors.reason.message = ('reason is required!')
-        isError = true
-    } else {
-        Errors.reason.type = null
-    }
+const req = (key, val) => (!val ? setErr(key, 'required') : clearErr(key))
 
-    if (isError) {
-        Toast.fire({
-            icon: "error",
-            html: `
-                <div class="text-h6 text-bold text-uppercase">Request Failed</div>
-                <div class="text-caption">Something went wrong.</div>
-            `
-        })
-    }
+const ValidateLeaveType = () => {
 
+    let isError = false
+
+    isError ||= req('typeid', typeid.value)
+
+    if (isError) failToast()
+    return !isError
+}
+
+const ValidateDate = () => {
+
+    let isError = false
+
+    isError ||= req('date', date.value)
+    isError ||= req('reason', reason.value)
+
+    if (isError) failToast()
     return !isError
 }
 
 const Save = async () => {
-    if (!Validations()) return;
+    if (!ValidateDate()) return;
     SubmitLoading.value = true;
+    const datestart = date.value.from;
+    const dateend = date.value.to;
     try {
         const emp = employee.value;
         const response = await api.post('/portal/leave', {
             employeeid: emp.id,
             typeid: typeid.value,
-            datestart: datestart.value,
-            dateend: dateend.value,
+            datestart: datestart,
+            dateend: dateend,
             reason: reason.value
         });
         Swal.fire({
             icon: 'success',
-            title: 'LEAVE APPLICATION RECORDED',
-            text: 'Successfully Saved'
+            title: 'Leave Filed'
         });
         emit('update:modelValue', null);
         employee.value = [];
@@ -340,30 +327,105 @@ const filterLeaveTypeFn = createFilterFn(leavetypes, filteredLeaveTypes);
 const LoadLeaveTypes = async () => {
     try {
         const { data } = await api.get(`/portal/option/leavetype`);
-        leavetypes.value = data.map(d => ({
-            label: d?.name,
-            value: Number(d?.id)
-        }))
-        filteredLeaveTypes.value = [...leavetypes.value]
+        leavetypes.value = data
     } catch (error) {
         console.error("Error fetching options:", error);
     }
 };
 
-const PopulateData = async (app) => {
+const PopulateData = async () => {
+    step.value = 0;
     await loadModels();
     employee.value = [];
     isMatch.value = false;
-    LoadLeaveTypes()
+    LoadLeaveTypes();
 }
 
+const step = ref(0)
+const totalSteps = 2;
+
+const validators = [
+    ValidateLeaveType
+]
+
+const NextStep = () => {
+    const validate = validators[step.value];
+    if (validate && !validate()) return;
+    step.value++;
+};
+
+const PreviousStep = () => {
+    if (step.value > 0) step.value--;
+};
+
 const popup = ref(null)
+
+const TOTAL_COVERS = 25;
+
+const randomCover = ref('');
+
+onBeforeMount(() => {
+    const randomNumber = Math.floor(Math.random() * TOTAL_COVERS) + 1;
+
+    randomCover.value = new URL(
+        `../assets/cover/${randomNumber}.jpg`,
+        import.meta.url
+    ).href;
+})
 </script>
 
 <style lang="css" scoped>
+
+.card-menu
+{
+    width: 150px;
+    height: 175px;
+}
+
+.card-profile {
+        overflow: hidden;
+        background: linear-gradient(
+  135deg,
+  #c94a4a 0%,
+  #a91f1f 65%,
+  #900201 100%
+);
+    }
+
+    /* COVER PHOTO */
+    .cover-photo {
+        height: 175px;
+        width: 100%;
+        position: relative;
+    }
+
+    .cover-photo img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    }
+
+    /* Optional dark overlay for readability */
+    .cover-photo::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(
+        to bottom,
+        rgba(0, 0, 0, 0.15),
+        rgba(0, 0, 0, 0.55)
+    );
+    }
+
+    /* PROFILE IMAGE SECTION */
+    .profile-section {
+    margin-top: -80px; /* pulls image over cover */
+    }
+
+    /* PROFILE IMAGE */
     .profile-img {
-        width: 200px;
-        height: 200px;
+        width: 150px;
+        height: 150px;
         border-radius: 50%;
         object-fit: cover;
         border: 5px solid #ffffff;

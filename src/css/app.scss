@@ -204,7 +204,7 @@ body {
     rgba(250, 103, 36, 0.15) 0px 6px 18px 0px,
     rgba(250, 103, 36, 0.25) 0px 0px 8px 1px;
   transform: scale(1.05);
-  background-color: #FDF3E9;
+  background-color: #fcf2f2;
 }
 
 /* ✅ Checkmark overlay */
@@ -418,4 +418,43 @@ body {
 .custom-border
 {
   box-shadow: rgba(0, 0, 0, 0.05) 0px 0px 0px 1px !important;
+}
+
+.q-field__bottom
+{
+    display: none;
+}
+
+.q-field
+{
+    padding: 0;
+}
+
+
+/* SUCCESS */
+.swal-toast.swal2-icon-success {
+  background-color: $positive !important; /* green */
+  color: #ffffff !important;
+}
+
+/* ERROR */
+.swal-toast.swal2-icon-error {
+  background-color: $negative !important; /* red */
+  color: #ffffff !important;
+}
+
+/* shared white text */
+.swal-toast .swal2-title,
+.swal-toast .swal2-html-container {
+  color: #ffffff !important;
+}
+
+/* icon white */
+.swal-toast .swal2-icon {
+  color: #ffffff !important;
+}
+
+/* progress bar */
+.swal-toast .swal2-timer-progress-bar {
+  background: rgba(255, 255, 255, 0.6) !important;
 }
