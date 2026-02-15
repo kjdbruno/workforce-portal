@@ -458,3 +458,26 @@ body {
 .swal-toast .swal2-timer-progress-bar {
   background: rgba(255, 255, 255, 0.6) !important;
 }
+
+/**
+  * Custom button width
+  */
+.btn-xs {
+  width: 80px !important;
+}
+
+.btn-sm {
+  width: 100px !important;
+}
+
+.btn-md {
+  width: 125px !important;
+}
+
+.btn-lg {
+  width: 150px !important;
+}
+
+.btn-xl {
+  width: 250px !important;
+}

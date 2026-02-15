@@ -1,28 +1,70 @@
 <template>
-    <q-dialog v-model="isOpen" persistent class="dialog" @before-show="PopulateData(); ">
-        <q-card class="dialog-card column full-height">
-            <q-card-section class="q-pa-lg">
-                <div class="text-h6 text-uppercase">time in/time out</div>
-            </q-card-section>
-            <q-card-section class="q-pa-none">
-                <SimpleVueCamera ref="camera"/>
-            </q-card-section>
-            
-            <q-card-actions class="q-pa-lg bg" align="center">
-                <div class="q-gutter-sm">
-                    <q-btn unelevated size="md" color="primary" class="btn text-capitalize" label="scan" @click="ScanFace()" />
-                    <q-btn unelevated size="md" color="primary" class="btn text-capitalize" label="discard" @click="() => { emit('update:modelValue', null); }" outline/>
-                </div>
-            </q-card-actions>
-            <q-inner-loading :showing="SubmitLoading" dark>
-                <div class="text-center">
-                    <q-spinner-puff size="xl" color="white"/>
-                    <!-- <div class="text-caption text-white text-uppercase q-mt-xs">we're working on it!</div> -->
-                    <div class="text-h6 text-white text-uppercase q-mt-xs">please smile to continue!</div>
-                </div>
-            </q-inner-loading>
-        </q-card>
-    </q-dialog>
+    <div class="camera-wrap">
+
+    <SimpleVueCamera ref="camera" class="camera-view mirror" />
+
+    <!-- Overlay -->
+    <div class="overlay">
+      <!-- dark mask -->
+      <div class="mask"></div>
+
+      <!-- face guide -->
+      <div class="face-guide">
+        <div class="crosshair"></div>
+        <div class="hint">Align your face inside the frame</div>
+      </div>
+    </div>
+<q-page-sticky position="bottom" :offset="[0, 75]" >
+    <q-btn
+        unelevated
+        size="xl"
+        color="primary"
+        class="btn-xl text-uppercase"
+        label="START SCAN"
+        :loading="SubmitLoading"
+        @click="ScanFace()"
+    >
+        <template v-slot:loading>
+            <q-spinner-puff />
+        </template>
+    </q-btn>
+</q-page-sticky>
+  </div>
+    <!-- <div class="camera-wrap">
+        <SimpleVueCamera ref="camera" class="camera-view mirror"/>
+    <div class="overlay">
+      <div class="mask"></div>
+      <div class="face-guide">
+        <div class="hint">Align your face inside the frame</div>
+        <div class="crosshair"></div>
+
+      </div>
+    </div>
+        <q-page-sticky position="top" :offset="[0, 0]" class="full-width full-height flex flex-center">
+    <q-btn
+        unelevated
+        size="xl"
+        color="primary"
+        class="btn-xl text-uppercase"
+        label="START SCAN"
+        :loading="SubmitLoading"
+        @click="ScanFace()"
+    >
+        <template v-slot:loading>
+            <q-spinner-puff />
+        </template>
+    </q-btn>
+</q-page-sticky>
+
+        <q-page-sticky position="top-right" :offset="[18, 18]">
+           <q-card class="no-shadow radius-md" style="width: 250px;">
+                <q-card-section>
+                    <div class="text-body1 text-bold">Face Recognition</div>
+                    <div class="text-caption">Please position your face within the camera frame and smile clearly.</div>
+                </q-card-section>
+            </q-card>
+        </q-page-sticky>
+    </div> -->
 </template>
 <script setup>
 import { ref, onMounted, onBeforeUnmount, onBeforeMount, watch, reactive, computed } from 'vue';
@@ -33,21 +75,6 @@ import { Toast } from 'src/boot/sweetalert';
 import { useEmployeeStore } from 'src/stores/employee-store'
 const EmployeeStore = useEmployeeStore();
 
-const props = defineProps({
-    modelValue: String,
-    dialogName: String
-})
-
-const emit = defineEmits(['update:modelValue'])
-
-const isOpen = computed({
-    get: () => props.modelValue === props.dialogName,
-    set: (val) => {
-        if (!val) emit('update:modelValue', null)
-    }
-})
-
-const StartScan = ref(false);
 const SubmitLoading = ref(false);
 
 import * as faceapi from 'face-api.js';
@@ -228,6 +255,7 @@ const ScanFace = async () => {
             Swal.fire({
                 icon: 'success',
                 title: 'LOG RECORDED',
+                confirmButtonColor: "#900201",
                 html: `
                     <div style="font-size:1.25em;font-weight:bold;">${fullName}</div>
                     <div style="font-size:1em; margin-top:5px;">${formattedDate} @ ${formattedTime}</div>
@@ -278,29 +306,36 @@ const detectSmile = async (timeoutMs = 5000, threshold = 0.7) => {
     }
 }
 
+onMounted(() => {
+    PopulateData()
+})
 
 const PopulateData = async (app) => {
     await loadModels();
     employee.value = [];
     isMatch.value = false;
     getLocation();
-    StartScan.value = true;
 }
 
 const geo_lat = ref(null)
 const geo_lng = ref(null)
+const geo_place = ref(null)
 const geoError = ref(null)
 
-const getLocation = () => {
+const getLocation = async () => {
     if (!navigator.geolocation) {
         geoError.value = 'Geolocation not supported'
         return
     }
 
     navigator.geolocation.getCurrentPosition(
-        (position) => {
+        async (position) => {
             geo_lat.value = position.coords.latitude
             geo_lng.value = position.coords.longitude
+            await getPlaceName(
+                position.coords.latitude,
+                position.coords.longitude
+            )
         },
         (error) => {
             geoError.value = error.message
@@ -311,7 +346,104 @@ const getLocation = () => {
             maximumAge: 0
         }
     )
+    
+}
+
+const getPlaceName = async (lat, lng) => {
+    try {
+        const response = await fetch(`https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${lat}&lon=${lng}`)
+        const data = await response.json()
+        geo_place.value = data.display_name || 'Unknown location'
+    } catch {
+        geo_place.value = 'Unable to fetch location name'
+    }
 }
 
 
 </script>
+
+<style scoped>
+.camera-wrap{
+    position: relative;
+    width: 100%;
+    height: 100vh;
+    overflow: hidden;
+    background: #000;
+}
+
+.camera-view{
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* overlay container */
+.overlay{
+  position: absolute;
+  inset: 0;
+  pointer-events: none; /* don't block camera clicks */
+}
+
+/* optional dark overlay (subtle) */
+.mask{
+  position: absolute;
+  inset: 0;
+  background: rgba(0,0,0,.25);
+}
+
+/* face guide (oval) */
+.face-guide{
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: min(72vw, 350px);
+  height: min(92vw, 450px);
+  transform: translate(-50%, -50%);
+  border: 4px solid rgba(255,255,255,.9);
+  border-radius: 50% / 55%;
+  box-shadow: 0 0 0 9999px rgba(0,0,0,.35); /* creates a cutout effect */
+}
+
+/* hint text */
+.hint{
+  position: absolute;
+  bottom: -44px;
+  left: 50%;
+  transform: translateX(-50%);
+  color: #fff;
+  font-weight: 600;
+  font-size: 14px;
+  text-align: center;
+  width: 260px;
+  opacity: .95;
+}
+
+.crosshair{
+  position: absolute;
+  inset: 0;
+}
+.crosshair::before,
+.crosshair::after{
+  content: "";
+  position: absolute;
+  background: rgba(255,255,255,.8);
+}
+.crosshair::before{
+  width: 40%;
+  height: 2px;
+  top: 50%;
+  left: 30%;
+}
+.crosshair::after{
+  width: 2px;
+  height: 40%;
+  left: 50%;
+  top: 30%;
+}
+
+.mirror {
+  transform: scaleX(-1) !important;
+}
+
+
+</style>

@@ -93,8 +93,6 @@ import { api } from 'src/boot/axios';
 import moment from 'moment';
 import Swal from 'sweetalert2';
 import { Toast } from 'src/boot/sweetalert'; 
-import { useEmployeeStore } from 'src/stores/employee-store'
-const EmployeeStore = useEmployeeStore();
 
 const props = defineProps({
     modelValue: String,

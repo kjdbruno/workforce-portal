@@ -12,7 +12,7 @@ export default defineConfig((/* ctx */) => {
     // --> boot files are part of "main.js"
     // https://v2.quasar.dev/quasar-cli-vite/boot-files
     boot: [
-      'axios', 'socket', 'sweetalert', 'helper'
+      'axios', 'sweetalert', 'helper'
     ],
 
     // https://v2.quasar.dev/quasar-cli-vite/quasar-config-file#css
@@ -32,6 +32,7 @@ export default defineConfig((/* ctx */) => {
 
       'roboto-font', // optional, you are not bound to it
       'material-icons', // optional, you are not bound to it
+      'bootstrap-icons',
     ],
 
     // Full list of options: https://v2.quasar.dev/quasar-cli-vite/quasar-config-file#build
@@ -89,7 +90,8 @@ export default defineConfig((/* ctx */) => {
       // directives: [],
 
       // Quasar plugins
-      plugins: ['Dialog']
+      plugins: ['Dialog'],
+      iconSet: 'bootstrap-icons'
     },
 
     // animations: 'all', // --- includes all animations
@@ -187,7 +189,7 @@ export default defineConfig((/* ctx */) => {
       builder: {
         // https://www.electron.build/configuration/configuration
 
-        appId: 'feedback-internal-quasar'
+        appId: 'workforce-portal'
       }
     },
 

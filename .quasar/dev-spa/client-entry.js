@@ -24,6 +24,8 @@ import '@quasar/extras/roboto-font/roboto-font.css'
 
 import '@quasar/extras/material-icons/material-icons.css'
 
+import '@quasar/extras/bootstrap-icons/bootstrap-icons.css'
+
 
 
 
@@ -145,8 +147,6 @@ createQuasarApp(createApp, quasarUserOptions)
     return Promise[ method ]([
       
       import('boot/axios'),
-      
-      import('boot/socket'),
       
       import('boot/sweetalert'),
       

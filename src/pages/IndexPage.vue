@@ -1,19 +1,23 @@
 <template>
-    <q-page class="full-height flex flex-center page-bg">
-        <div class="card-grid">
-            <div v-for="(data, index) in tabs" :key="`data-${data.id}`" class="card-anim-wrapper" :style="{ animationDelay: `${index * 100}ms` }">
-                <q-card @click="openDialog(data.dialog)" class="card card-menu card-hover-animate q-pa-md no-shadow cursor-pointer radius-sm" >
-                    <q-card-section class="text-center body">
-                        <div class="text-h5 text-white text-bold text-uppercase">{{ data.label }}</div>
-                    </q-card-section>
-                </q-card>
-            </div>
-        </div>
-        <time-in-dialog v-model="activeDialog" dialog-name="TimeInDialog"/>
-        <biometric-dialog v-model="activeDialog" dialog-name="BiometricDialog"/>
-        <leave-dialog v-model="activeDialog" dialog-name="LeaveDialog"/>
-        <div class="bg-overlay"></div>
-    </q-page>
+    <q-layout view="lHh Lpr lFf">
+        <q-page-container>
+            <q-page class="full-height flex flex-center page-bg">
+                <div class="card-grid">
+                    <div v-for="(data, index) in tabs" :key="`data-${data.id}`" class="card-anim-wrapper" :style="{ animationDelay: `${index * 100}ms` }">
+                        <q-card @click="openDialog(data.dialog)" class="card card-menu card-hover-animate q-pa-md no-shadow cursor-pointer radius-sm" >
+                            <q-card-section class="text-center body">
+                                <div class="text-h5 text-white text-bold text-uppercase">{{ data.label }}</div>
+                            </q-card-section>
+                        </q-card>
+                    </div>
+                </div>
+                <time-in-dialog v-model="activeDialog" dialog-name="TimeInDialog"/>
+                <biometric-dialog v-model="activeDialog" dialog-name="BiometricDialog"/>
+                <leave-dialog v-model="activeDialog" dialog-name="LeaveDialog"/>
+                <div class="bg-overlay"></div>
+            </q-page>
+        </q-page-container>
+    </q-layout>
 </template>
 
 <script setup>
