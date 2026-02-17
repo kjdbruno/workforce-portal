@@ -1,14 +1,34 @@
 <template>
-    <div class="camera-wrap">
+    <q-page class="flex flex-center">
+        <q-card class="radius-md no-shadow" style="width: 65%; box-shadow: rgba(0, 0, 0, 0.09) 0px 3px 12px;">
+            <q-card-section class="q-pl-lg q-pr-lg">
+                <div class="text-h6 text-uppercase">scan to time in/time out</div>
+                <div class="text-caption">Please position your face within the camera frame and smile clearly.</div>
+            </q-card-section>
+            <q-card-section class="q-pl-lg q-pr-lg">
+                <SimpleVueCamera ref="camera" @loading="LoadingCamera()" @started="StartedCamera()" class="full-width" />
+            </q-card-section>
+            <q-card-actions align="center" class="q-pb-lg">
+                <q-btn label="start scan" color="primary" unelevated class="btn-xl" @click="() => { ScanFace(); }"/>
+            </q-card-actions>
+            <q-inner-loading :showing="SubmitLoading || CameraLoading">
+                <div class="text-center" v-if="CameraLoading">
+                    <q-spinner-puff size="xl" color="primary"/>
+                    <div class="text-h6 text-dark text-uppercase q-mt-xs">initializing camera!</div>
+                </div>
+                <div class="text-center" v-else>
+                    <q-spinner-puff size="xl" color="primary"/>
+                    <div class="text-h6 text-dark text-uppercase q-mt-xs">we're working on it!</div>
+                </div>
+            </q-inner-loading>
+        </q-card>
+    </q-page>
+    <!-- <div class="camera-wrap">
 
     <SimpleVueCamera ref="camera" class="camera-view mirror" />
 
-    <!-- Overlay -->
     <div class="overlay">
-      <!-- dark mask -->
       <div class="mask"></div>
-
-      <!-- face guide -->
       <div class="face-guide">
         <div class="crosshair"></div>
         <div class="hint">Align your face inside the frame</div>
@@ -29,7 +49,7 @@
         </template>
     </q-btn>
 </q-page-sticky>
-  </div>
+  </div> -->
     <!-- <div class="camera-wrap">
         <SimpleVueCamera ref="camera" class="camera-view mirror"/>
     <div class="overlay">
@@ -75,6 +95,7 @@ import { Toast } from 'src/boot/sweetalert';
 import { useEmployeeStore } from 'src/stores/employee-store'
 const EmployeeStore = useEmployeeStore();
 
+const CameraLoading = ref(false);
 const SubmitLoading = ref(false);
 
 import * as faceapi from 'face-api.js';
@@ -188,12 +209,13 @@ const ScanFace = async () => {
         const { passed, happy } = await detectSmile(6000, 0.7)
 
         if (!passed) {
-            Swal.fire({
-                icon: 'error',
-                title: 'Liveness Failed',
-                text: 'Please smile clearly to continue.',
-                confirmButtonColor: "#d33",
-            })
+            Toast.fire({
+                icon: "error",
+                html: `
+                    <div class="text-subtitle1 text-bold text-uppercase">Liveness check failed!</div>
+                    <div class="text-caption text-capitalize;">Please smile clearly to continue<div>
+                `
+            });
             return
         }
 
@@ -245,23 +267,27 @@ const ScanFace = async () => {
         const recognitionScore = Math.max(0, Math.min(1, 1 - Number(distance || 0)))
 
         if (!match) {
-            Swal.fire({ icon: "error", title: "Face Not Recognized", text: "No matching employee found." })
+            Toast.fire({
+                icon: "error",
+                html: `
+                    <div class="text-subtitle1 text-bold text-uppercase">not recognized!</div>
+                    <div class="text-caption text-capitalize;">no matching employee found<div>
+                `
+            });
         } else {
             const fullName = `${employee.first_name} ${employee.middle_name ?? ''} ${employee.last_name}`.toUpperCase()
             const rawDateTime = new Date(`${log.captured_at}`)
             const formattedDate = rawDateTime.toLocaleDateString('en-PH', { year: 'numeric', month: 'long', day: 'numeric' })
             const formattedTime = rawDateTime.toLocaleTimeString('en-PH', { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: true })
-
-            Swal.fire({
-                icon: 'success',
-                title: 'LOG RECORDED',
-                confirmButtonColor: "#900201",
+            Toast.fire({
+                icon: "success",
                 html: `
-                    <div style="font-size:1.25em;font-weight:bold;">${fullName}</div>
-                    <div style="font-size:1em; margin-top:5px;">${formattedDate} @ ${formattedTime}</div>
-                    <div style="font-size:.9em; margin-top:5px;">Score: ${recognitionScore.toFixed(4)} | Liveness: ${liveness_passed ? 'Passed' : 'Failed'}</div>
+                    <div class="text-subtitle1 text-bold text-uppercase">log recorded!</div>
+                    <div class="text-body1 text-capitalize;">${fullName}<div>
+                    <div class="text-caption text-capitalize;">${formattedDate} @ ${formattedTime}<div>
+                    <div class="text-caption text-capitalize;">Score: ${recognitionScore.toFixed(4)} | Liveness: ${liveness_passed ? 'Passed' : 'Failed'}<div>
                 `
-            })
+            });
         }
         emit('update:modelValue', null);
     } catch (e) {
@@ -357,6 +383,14 @@ const getPlaceName = async (lat, lng) => {
     } catch {
         geo_place.value = 'Unable to fetch location name'
     }
+}
+
+const LoadingCamera = () => {
+    CameraLoading.value = true;
+}
+
+const StartedCamera = () => {
+    CameraLoading.value = false;
 }
 
 
