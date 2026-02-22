@@ -1,14 +1,17 @@
 <template>
     <q-page class="flex flex-center">
-        <q-card class="radius-md no-shadow" style="width: 65%; box-shadow: rgba(0, 0, 0, 0.09) 0px 3px 12px;">
-            <q-card-section class="q-pl-lg q-pr-lg">
+        <q-card class="radius-md no-shadow q-pa-lg" style="width: 65%; box-shadow: rgba(0, 0, 0, 0.09) 0px 3px 12px;">
+            <q-card-section class="text-center">
                 <div class="text-h6 text-uppercase">scan to file a leave</div>
                 <div class="text-caption">Please position your face within the camera frame and smile clearly.</div>
             </q-card-section>
-            <q-card-section class="q-pl-lg q-pr-lg" v-if="!isMatch">
+            <q-card-section v-if="!isMatch">
                 <SimpleVueCamera ref="camera" @loading="LoadingCamera()" @started="StartedCamera()" class="full-width" />
+                <div class="absolute-full flex flex-center camera-overlay" v-show="!SubmitLoading && !CameraLoading">
+                    <q-btn label="Scan Face" color="primary" unelevated size="lg" icon="bi-camera2" class="text-capitalize btn-xl" @click="ScanFace" :loading="SubmitLoading"/>
+                </div>
             </q-card-section>
-            <q-card-section class="q-pl-lg q-pr-lg" v-else>
+            <q-card-section v-else>
                 <div class="row q-col-gutter-lg">
                     <div class="col-4">
                         <q-card key="data-add" class="card card-profile no-shadow radius-sm q-mb-sm q-pb-lg">
@@ -53,11 +56,19 @@
                             <div class="row q-col-gutter-xs q-mb-md">
                                 <div class="col">
                                     <div class="text-caption text-uppercase" :class="Errors.datefrom.type ? 'text-negative text-italic' : 'text-grey'">{{ Errors.datefrom.type ? Errors.datefrom.msg : 'date from' }}</div>
-                                    <q-date v-model="datefrom" mask="YYYY-MM-DD" @update:model-value="() => { popup.hide(); } " class="no-shadow custom-border full-width"/>
+                                    <q-input outlined v-model="datefrom" label="Enter Date" :error="Errors.datefrom.type" no-error-icon>
+                                        <q-popup-proxy cover transition-show="scale" transition-hide="scale" class="no-shadow custom-border radius-sm" ref="popup">
+                                            <q-date v-model="datefrom" mask="YYYY-MM-DD" @update:model-value="() => { popup.hide(); } " class="full-width"/>
+                                        </q-popup-proxy>
+                                    </q-input>
                                 </div>
                                 <div class="col">
                                     <div class="text-caption text-uppercase" :class="Errors.dateto.type ? 'text-negative text-italic' : 'text-grey'">{{ Errors.dateto.type ? Errors.dateto.msg : 'date to' }}</div>
-                                    <q-date v-model="dateto" mask="YYYY-MM-DD" @update:model-value="() => { popup.hide(); } " class="no-shadow custom-border full-width"/>
+                                    <q-input outlined v-model="dateto" label="Enter Date" :error="Errors.dateto.type" no-error-icon>
+                                        <q-popup-proxy cover transition-show="scale" transition-hide="scale" class="no-shadow custom-border radius-sm" ref="popup">
+                                            <q-date v-model="dateto" mask="YYYY-MM-DD" @update:model-value="() => { popup.hide(); } " class="full-width"/>
+                                        </q-popup-proxy>
+                                    </q-input>
                                 </div>
                             </div>
                             <div>
@@ -76,10 +87,10 @@
                 </div>
             </q-card-section>
             <q-card-actions align="center" class="q-pb-lg">
-                <q-btn v-if="!isMatch" unelevated size="md" color="primary" class="btn-xl text-capitalize" label="start scan" @click="() => { ScanFace() }" />
                 <q-btn v-if="isMatch && step > 0" unelevated size="md" color="primary" class="btn text-capitalize" label="previous" @click="() => { PreviousStep() }" />
                 <q-btn v-if="isMatch && step < totalSteps - 1" unelevated size="md" color="primary" class="btn text-capitalize" label="next" @click="() => { NextStep() }" />
                 <q-btn v-if="isMatch && step === totalSteps - 1" unelevated size="md" color="primary" class="btn text-capitalize" label="save" @click="Save" />
+                <q-btn v-if="isMatch" unelevated size="md" color="primary" class="btn text-capitalize" outline label="clear" @click="ResetForm()" />
             </q-card-actions>
             <q-inner-loading :showing="SubmitLoading || CameraLoading">
                 <div class="text-center" v-if="CameraLoading">
@@ -603,4 +614,17 @@ onBeforeMount(() => {
         background: #ffffff;
         box-shadow: 0 12px 28px rgba(0, 0, 0, 0.35);
     }
+    .camera-overlay {
+    /* background: rgba(0, 0, 0, 0.15); */
+    backdrop-filter: blur(3px);
+    border-radius: 12px;
+    transition: opacity 0.3s ease;
+}
+
+.scan-btn {
+    /* padding: 12px 28px; */
+    /* font-size: 16px; */
+    /* border-radius: 10px; */
+    backdrop-filter: blur(8px);
+}
 </style>

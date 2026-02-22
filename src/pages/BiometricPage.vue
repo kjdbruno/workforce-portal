@@ -1,16 +1,16 @@
 <template>
     <q-page class="flex flex-center">
-        <q-card class="radius-md no-shadow" style="width: 65%; box-shadow: rgba(0, 0, 0, 0.09) 0px 3px 12px;">
-            <q-card-section class="q-pl-lg q-pr-lg">
+        <q-card class="radius-md no-shadow q-pa-lg" style="width: 65%; box-shadow: rgba(0, 0, 0, 0.09) 0px 3px 12px;">
+            <q-card-section class="text-center">
                 <div class="text-h6 text-uppercase">scan to time in/time out</div>
                 <div class="text-caption">Please position your face within the camera frame and smile clearly.</div>
             </q-card-section>
-            <q-card-section class="q-pl-lg q-pr-lg">
+            <q-card-section class="relative-position">
                 <SimpleVueCamera ref="camera" @loading="LoadingCamera()" @started="StartedCamera()" class="full-width" />
+                <div class="absolute-full flex flex-center camera-overlay" v-show="!SubmitLoading && !CameraLoading">
+                    <q-btn label="Scan Face" color="primary" unelevated size="lg" icon="bi-camera2" class="text-capitalize btn-xl" @click="ScanFace" :loading="SubmitLoading"/>
+                </div>
             </q-card-section>
-            <q-card-actions align="center" class="q-pb-lg">
-                <q-btn label="start scan" color="primary" unelevated class="btn-xl" @click="() => { ScanFace(); }"/>
-            </q-card-actions>
             <q-inner-loading :showing="SubmitLoading || CameraLoading">
                 <div class="text-center" v-if="CameraLoading">
                     <q-spinner-puff size="xl" color="primary"/>
@@ -479,5 +479,17 @@ const StartedCamera = () => {
   transform: scaleX(-1) !important;
 }
 
+.camera-overlay {
+    /* background: rgba(0, 0, 0, 0.15); */
+    backdrop-filter: blur(3px);
+    border-radius: 12px;
+    transition: opacity 0.3s ease;
+}
 
+.scan-btn {
+    /* padding: 12px 28px; */
+    /* font-size: 16px; */
+    /* border-radius: 10px; */
+    backdrop-filter: blur(8px);
+}
 </style>
