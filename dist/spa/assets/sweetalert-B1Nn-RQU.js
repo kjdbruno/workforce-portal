@@ -1,1 +1,0 @@
-import{ah as e}from"./index-DYF0sKPI.js";import{S as t}from"./sweetalert2-B1irxaR5.js";const r=t.mixin({toast:!0,position:"bottom-start",showConfirmButton:!1,timer:3e3,timerProgressBar:!0,didOpen:o=>{o.onmouseenter=t.stopTimer,o.onmouseleave=t.resumeTimer}}),i=e(({app:o})=>{o.config.globalProperties.$toast=r});export{r as Toast,i as default};

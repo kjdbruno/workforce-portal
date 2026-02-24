@@ -24,6 +24,8 @@ import '@quasar/extras/roboto-font/roboto-font.css'
 
 import '@quasar/extras/material-icons/material-icons.css'
 
+import '@quasar/extras/bootstrap-icons/bootstrap-icons.css'
+
 
 
 
@@ -45,7 +47,7 @@ import quasarUserOptions from './quasar-user-options.js'
 
 
 
-const publicPath = `/`
+const publicPath = `/portal/`
 
 async function start ({
   app,
@@ -144,9 +146,9 @@ createQuasarApp(createApp, quasarUserOptions)
       
       import('boot/axios'),
       
-      import('boot/socket'),
+      import('boot/sweetalert'),
       
-      import('boot/sweetalert')
+      import('boot/helper')
       
     ]).then(bootFiles => {
       const boot = mapFn(bootFiles).filter(entry => typeof entry === 'function')

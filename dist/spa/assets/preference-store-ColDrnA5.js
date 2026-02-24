@@ -1,1 +1,0 @@
-import{Y as e}from"./index-DYF0sKPI.js";const t=e("preferenceStore",{state:()=>({component:null,filter:null,isEdit:!1,dialog:!1,isLoading:!1,isLoadingTable:!1,office:null}),getters:{},actions:{},persist:!0});export{t as u};
