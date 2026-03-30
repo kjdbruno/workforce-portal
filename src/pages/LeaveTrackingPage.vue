@@ -77,13 +77,13 @@
                                     <div class="text-body1 text-uppercase text-italic">{{ dt?.original_approver_position }}</div>
                                 </div>
                                 <div class="text-caption text-uppercase text-italic text-bold q-mb-lg">overiden by</div>
-                                <img :src="FormatSignature(dt?.override_signature)" width="100"/>
+                                <img :src="(dt?.override_signature)" width="100"/>
                                 <div class="text-h6 text-uppercase">{{ dt?.override_name }}</div>
                                 <div class="text-body1 text-uppercase text-italic">{{ dt?.override_position }}</div>
                                 <div class="text-caption text-uppercase text-italic">{{ FormatSigned(dt?.signed_at) }}</div>
                             </div>
                             <div v-if="!dt?.is_overide">
-                                <img :src="FormatSignature(dt?.original_signature)" width="100"/>
+                                <img :src="(dt?.original_signature)" width="100"/>
                                 <div class="text-h6 text-uppercase">{{ dt?.original_approver_name }}</div>
                                 <div class="text-body1 text-uppercase text-italic">{{ dt?.original_approver_position }}</div>
                                 <div class="text-caption text-uppercase text-italic">{{ FormatSigned(dt?.signed_at) }}</div>
@@ -91,11 +91,11 @@
                         </div>
                     </div>
                 </div>
-                <div class="q-gutter-sm">
-                    <q-btn unelevated size="md" color="primary" class="btn-md text-capitalize q-mt-md" label="print" @click="Print(info?.id)" />
-                    <q-btn unelevated size="md" color="primary" class="btn-md text-capitalize q-mt-md" outline label="clear" @click="Reset()" />
-                </div>
             </q-card-section>
+            <q-card-actions align="center">
+                <q-btn unelevated size="md" color="primary" class="btn-md text-capitalize q-mt-md" label="print" @click="Print(info?.id)" />
+                <q-btn unelevated size="md" color="primary" class="btn-md text-capitalize q-mt-md" outline label="clear" @click="Reset()" />
+            </q-card-actions>
             <q-inner-loading :showing="SubmitLoading">
                 <div class="text-center">
                     <q-spinner-puff size="xl" color="primary"/>

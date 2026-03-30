@@ -19,13 +19,13 @@
                                 <img :src="randomCover" alt="Cover"/>
                             </div>
                             <q-card-section class="text-center profile-section">
-                                <img :src="FormatAvatar(employee?.photo?.avatar)" alt="Profile" class="profile-img" />
+                                <img :src="employee?.photo" alt="Profile" class="profile-img" />
                             </q-card-section>
                             <q-card-section class="text-center q-pt-sm">
-                                <div class="text-caption text-uppercase text-white">{{ employee?.employment?.employee_no }}</div>
+                                <div class="text-caption text-uppercase text-white">{{ employee?.employee_no }}</div>
                                 <div class="text-h5 text-uppercase text-bold text-white">{{ FormatName(employee) }}</div>
-                                <div class="text-body1 text-uppercase text-white">{{ employee?.employment?.position?.name }}</div>
-                                <div class="text-caption text-uppercase text-white">{{ employee?.employment?.employment_status }}</div>
+                                <div class="text-body1 text-uppercase text-white">{{ employee?.position }}</div>
+                                <div class="text-caption text-uppercase text-white">{{ employee?.employment_status }}</div>
                             </q-card-section>
                         </q-card>
                     </div>
@@ -240,7 +240,7 @@ const ScanFace = async () => {
         const response = await api.post(`/portal/face`, {
             descriptor: Array.from(result.descriptor)
         });
-        const { match, employee: emp, distance } = response.data;
+        const { match, record: emp, distance } = response.data;
         if (!match) {
             Toast.fire({
                 icon: "error",

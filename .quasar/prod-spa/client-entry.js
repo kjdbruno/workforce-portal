@@ -47,7 +47,7 @@ import quasarUserOptions from './quasar-user-options.js'
 
 
 
-const publicPath = `/portal/`
+const publicPath = `/`
 
 async function start ({
   app,

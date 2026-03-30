@@ -49,7 +49,7 @@ export default defineConfig((/* ctx */) => {
 
       // rebuildCache: true, // rebuilds Vite/linter/etc cache on startup
 
-      publicPath: '/portal/',
+      publicPath: '/',
       // analyze: true,
       env: {
         VUE_APP_API_KEY: JSON.stringify('7fcb21ea7e5b4a2dbe30cb18730aeaf5d5e5c7ce45f962376355c1c4f07c8362'), // MUST MATCH BACKEND API_KEY
