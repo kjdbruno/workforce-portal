@@ -103,16 +103,17 @@ import SimpleVueCamera from 'simple-vue-camera';
 
 const camera = ref(null);
 
-async function loadModels() {
-    const MODEL_URL = '/models'; // put face-api models here
-    await faceapi.nets.ssdMobilenetv1.loadFromUri(MODEL_URL);
-    await faceapi.nets.faceLandmark68Net.loadFromUri(MODEL_URL);
-    await faceapi.nets.faceRecognitionNet.loadFromUri(MODEL_URL);
-
-    await faceapi.nets.faceExpressionNet.loadFromUri(MODEL_URL)
+const loadModels = async () => {
+    await Promise.all([
+        faceapi.nets.ssdMobilenetv1.loadFromUri( '/models'),
+        faceapi.nets.faceLandmark68Net.loadFromUri( '/models'),
+        faceapi.nets.faceRecognitionNet.loadFromUri( '/models'),
+        faceapi.nets.faceExpressionNet.loadFromUri( '/models'),
+    ])
+    console.log('✅ Models loaded')
 }
 
-async function captureFrame() {
+const captureFrame = async () => {
     if (!camera.value) return null;
     try {
         const blob = await camera.value.snapshot(); // returns Blob
@@ -126,7 +127,7 @@ async function captureFrame() {
 }
 
 // helper function
-function createImageFromBlob(blob) {
+const createImageFromBlob = (blob) => {
     return new Promise((resolve, reject) => {
         const img = new Image();
         img.onload = () => resolve(img);
@@ -136,7 +137,7 @@ function createImageFromBlob(blob) {
 }
 
 // usage in registerFace or scanFace
-async function detectDescriptor() {
+const detectDescriptor = async () => {
     const img = await captureFrame();
     if (!img) return null;
     const detection = await faceapi
@@ -164,7 +165,7 @@ const applyBackendErrors = (backendErrors) => {
 }
 
 // SHA-256 hex using WebCrypto (browser)
-async function sha256Hex(input) {
+const sha256Hex = async (input) => {
     const data = input instanceof ArrayBuffer
         ? input
         : (input instanceof Blob)
@@ -176,7 +177,7 @@ async function sha256Hex(input) {
 }
 
 // Stable device id (stored once)
-function getDeviceId() {
+const getDeviceId = () => {
     const key = 'device_id'
     let id = localStorage.getItem(key)
     if (!id) {
@@ -187,7 +188,7 @@ function getDeviceId() {
 }
 
 // Try to get active camera label (camera_id)
-async function getCameraId() {
+const getCameraId = async () => {
     try {
         const devices = await navigator.mediaDevices.enumerateDevices()
         const cams = devices.filter(d => d.kind === 'videoinput')
@@ -332,15 +333,15 @@ const detectSmile = async (timeoutMs = 5000, threshold = 0.7) => {
     }
 }
 
-onMounted(() => {
-    PopulateData()
+onMounted(async () => {
+    await loadModels();
+    await PopulateData()
 })
 
 const PopulateData = async (app) => {
-    await loadModels();
     employee.value = [];
     isMatch.value = false;
-    getLocation();
+    await getLocation();
 }
 
 const geo_lat = ref(null)
