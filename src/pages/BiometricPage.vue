@@ -104,11 +104,12 @@ import SimpleVueCamera from 'simple-vue-camera';
 const camera = ref(null);
 
 const loadModels = async () => {
+    const MODEL_URL = window.location.origin + '/models';
     await Promise.all([
-        faceapi.nets.ssdMobilenetv1.loadFromUri( '/models'),
-        faceapi.nets.faceLandmark68Net.loadFromUri( '/models'),
-        faceapi.nets.faceRecognitionNet.loadFromUri( '/models'),
-        faceapi.nets.faceExpressionNet.loadFromUri( '/models'),
+        faceapi.nets.ssdMobilenetv1.loadFromUri(MODEL_URL),
+        faceapi.nets.faceLandmark68Net.loadFromUri(MODEL_URL),
+        faceapi.nets.faceRecognitionNet.loadFromUri(MODEL_URL),
+        faceapi.nets.faceExpressionNet.loadFromUri(MODEL_URL),
     ])
     console.log('✅ Models loaded')
 }
