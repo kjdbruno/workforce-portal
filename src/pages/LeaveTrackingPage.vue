@@ -5,34 +5,21 @@
                 <div class="text-h6 text-uppercase">track my leave</div>
             </q-card-section>
             <q-card-section v-if="info.length === 0">
-                <div class="flex flex-center">
-                    <div class="row items-center q-gutter-xs">
-                        <!-- first 4 chars -->
-                        <q-input
-                            v-for="(char, index) in first"
-                            :key="'f'+index"
-                            v-model="first[index]"
-                            maxlength="1"
-                            outlined
-                            class="char-input"
-                            @update:model-value="moveNext(index, 'first')"
-                            @keydown.backspace="movePrev(index, 'first', $event)"
-                            ref="firstRefs"
-                            :input-style="{ 'textAlign': 'center', 'fontSize': '2em' }"
+                <div class="row justify-center q-gutter-sm q-mb-md">
+                    <q-input
+                        v-for="(char, index) in codeArray"
+                        :key="index"
+                        :model-value="codeArray[index]"
+                        maxlength="1"
+                        outlined
+                        dense
+                        class="code-box"
+                        input-class="text-center text-h6 text-bold"
+                        @update:model-value="val => handleInput(val, index)"
+                        @keydown="e => handleKeydown(e, index)"
+                        @paste="handlePaste"
+                        :ref="el => inputs[index] = el"
                         />
-                        <q-input
-                            v-for="(char, index) in last"
-                            :key="'l'+index"
-                            v-model="last[index]"
-                            maxlength="1"
-                            outlined
-                            class="char-input"
-                            @update:model-value="moveNext(index, 'last')"
-                            @keydown.backspace="movePrev(index, 'last', $event)"
-                            ref="lastRefs"
-                            :input-style="{ 'textAlign': 'center', 'fontSize': '2em' }"
-                        />
-                    </div>
                 </div>
             </q-card-section>
             <q-card-section v-else class="text-center">
@@ -68,7 +55,7 @@
                         <div v-if="dt?.status == 'Pending'">
                             <div class="text-h6 text-uppercase">{{ dt?.original_approver_name }}</div>
                             <div class="text-body1 text-uppercase text-italic">{{ dt?.original_approver_position }}</div>
-                            <q-btn v-if="dt?.order === 1" unelevated size="md" color="primary" class="btn-md text-capitalize q-mt-md" label="approve" @click="Approve(dt)" />
+                            <q-btn v-if="dt?.order === 1" unelevated size="sm" color="primary" class="btn-md text-capitalize q-my-sm" label="approve" @click="Approve(dt)" />
                         </div>
                         <div v-if="dt?.status == 'Approved'">
                             <div v-if="dt?.is_overide">
@@ -92,7 +79,7 @@
                     </div>
                 </div>
             </q-card-section>
-            <q-card-actions align="center">
+            <q-card-actions align="center" v-if="info.length !== 0">
                 <q-btn unelevated size="md" color="primary" class="btn-md text-capitalize q-mt-md" label="print" @click="Print(info?.id)" />
                 <q-btn unelevated size="md" color="primary" class="btn-md text-capitalize q-mt-md" outline label="clear" @click="Reset()" />
             </q-card-actions>
@@ -154,60 +141,71 @@ const TrackLeave = async (app) => {
     }
 }
 
-const first = ref(['','','',''])
-const last = ref(['','',''])
+const length = 7
+const codeArray = ref(Array(length).fill(''))
+const inputs = ref([])
 
-const firstRefs = ref([])
-const lastRefs = ref([])
-
-const fullValue = computed(() =>
-  `${first.value.join('')}-${last.value.join('')}`
-)
-
-function moveNext(index, group) {
-  nextTick(() => {
-    if (group === 'first') {
-      if (index < 3)
-        firstRefs.value[index + 1]?.focus()
-      else
-        lastRefs.value[0]?.focus()
-    } else {
-      if (index < 2)
-        lastRefs.value[index + 1]?.focus()
+const formattedCode = computed(() => {
+    const raw = codeArray.value.join('')
+    if (raw.length >= 4) {
+        return raw.slice(0, 4) + '-' + raw.slice(4)
     }
-  })
-}
-
-function movePrev(index, group, e) {
-  if (e.target.value) return
-
-  nextTick(() => {
-    if (group === 'last') {
-      if (index > 0)
-        lastRefs.value[index - 1]?.focus()
-      else
-        firstRefs.value[3]?.focus()
-    } else {
-      if (index > 0)
-        firstRefs.value[index - 1]?.focus()
-    }
-  })
-}
-
-watch(fullValue, (val) => {
-
-  const clean = val.replace('-', '')
-
-  if (clean.length === 7) {
-    onCompleted(val)
-  }
-
+    return raw
 })
 
-function onCompleted(value) {
-  TrackLeave(value)
+onMounted(() => {
+    inputs.value[0]?.focus()
+})
+
+const handleInput = (val, index) => {
+    if (!/^[0-9]$/.test(val)) {
+        codeArray.value[index] = ''
+        return
+    }
+
+    codeArray.value[index] = val
+    
+    if (index < codeArray.value.length - 1) {
+        nextTick(() => {
+            inputs.value[index + 1]?.focus()
+        })
+    }
 }
 
+const handleKeydown = (e, index) => {
+    if (e.key === 'Backspace') {
+        if (!codeArray.value[index] && index > 0) {
+            nextTick(() => inputs.value[index - 1]?.focus())
+        }
+    }
+
+    if (e.key === 'ArrowLeft' && index > 0) {
+        nextTick(() => inputs.value[index - 1]?.focus())
+    }
+
+    if (e.key === 'ArrowRight' && index < length - 1) {
+        nextTick(() => inputs.value[index + 1]?.focus())
+    }
+}
+
+const handlePaste = (e) => {
+    e.preventDefault()
+
+    let paste = e.clipboardData.getData('text')
+    paste = paste.replace(/[^0-9]/g, '')
+
+    if (paste.length === 7) {
+        paste.split('').forEach((char, i) => {
+        codeArray.value[i] = char
+        })
+    }
+}
+
+watch(formattedCode, (val) => {
+    if (val.length === 8 && /^\d{4}-\d{3}$/.test(val)) {
+        TrackLeave(val)
+    }
+})
 
 const FormatSigned = (date) => {
     if (!date) return ''
@@ -268,10 +266,6 @@ const ComputeLeaveDays = (dateFrom, dateTo) => {
     return diff >= 0 ? diff + 1 : 0 // +1 for inclusive
 }
 
-const FormatSignature = (sign) => {
-    return `${process.env.VUE_APP_BACKEND_URL}${sign.signature}`
-}
-
 const Approve = async (app) => {
     SubmitLoading.value = true;
     const approverId = app?.id;
@@ -306,10 +300,7 @@ const Approve = async (app) => {
 
 const Reset = () => {
     info.value = [];
-    first.value = ['','','','']
-    last.value = ['','','']
-    firstRefs.value = []
-    lastRefs.value = []
+    codeArray.value = Array(length).fill('');
 }
 
 const printDialog = ref(false);
@@ -394,5 +385,14 @@ const Print = async (id) => {
     .char-input {
         width: 75px;
     }
+.code-box {
+  width: 75px;
+}
 
+/* Better spacing for mobile */
+@media (max-width: 500px) {
+  .code-box {
+    width: 38px;
+  }
+}
 </style>

@@ -481,15 +481,23 @@ const Save = async () => {
         ResetForm()
     } catch (e) {
 
-        if (e.response && e.response.data) {
-            Toast.fire({
-                icon: "error",
-                html: `
-                    <div class="text-h6 text-bold text-uppercase">Request Failed</div>
-                    <div class="text-caption">Something went wrong.</div>
-                `
-            })
+        applyBackendErrors(e.response.data);
+
+        let message = "Something went wrong.";
+
+        if (e.response.data.errors && e.response.data.errors.length > 0) {
+            message = e.response.data.errors[0].msg;
+        } else if (e.response.data.error) {
+            message = e.response.data.error;
         }
+
+        Toast.fire({
+            icon: "error",
+            html: `
+                <div class="text-h6 text-bold text-uppercase">Request Failed</div>
+                <div class="text-caption">${message}</div>
+            `
+        });
 
     } finally {
         SubmitLoading.value = false;

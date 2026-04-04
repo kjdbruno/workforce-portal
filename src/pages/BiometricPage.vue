@@ -1,14 +1,17 @@
 <template>
     <q-page class="flex flex-center">
-        <q-card class="radius-md no-shadow q-pa-lg" style="width: 65%; box-shadow: rgba(0, 0, 0, 0.09) 0px 3px 12px;">
+        <q-card class="radius-md no-shadow q-pa-lg" style="width: 75%; box-shadow: rgba(0, 0, 0, 0.09) 0px 3px 12px;">
             <q-card-section class="text-center">
                 <div class="text-h6 text-uppercase">scan to time in/time out</div>
                 <div class="text-caption">Please position your face within the camera frame and smile clearly.</div>
             </q-card-section>
             <q-card-section class="relative-position">
-                <SimpleVueCamera ref="camera" @loading="LoadingCamera()" @started="StartedCamera()" class="full-width" />
+                <SimpleVueCamera ref="camera" @loading="LoadingCamera()" @started="StartedCamera()" :constraints="cameraConstraints" class="full-width" />
                 <div class="absolute-full flex flex-center camera-overlay" v-show="!SubmitLoading && !CameraLoading">
                     <q-btn label="Scan Face" color="primary" unelevated size="lg" icon="bi-camera2" class="text-capitalize btn-xl" @click="ScanFace" :loading="SubmitLoading"/>
+                </div>
+                <div class="absolute-left q-pa-lg">
+                    <q-btn unelevated size="lg" icon="bi-arrow-repeat" class="text-capitalize" round @click="ToggleCamera"/>
                 </div>
             </q-card-section>
             <q-inner-loading :showing="SubmitLoading || CameraLoading">
@@ -23,68 +26,6 @@
             </q-inner-loading>
         </q-card>
     </q-page>
-    <!-- <div class="camera-wrap">
-
-    <SimpleVueCamera ref="camera" class="camera-view mirror" />
-
-    <div class="overlay">
-      <div class="mask"></div>
-      <div class="face-guide">
-        <div class="crosshair"></div>
-        <div class="hint">Align your face inside the frame</div>
-      </div>
-    </div>
-<q-page-sticky position="bottom" :offset="[0, 75]" >
-    <q-btn
-        unelevated
-        size="xl"
-        color="primary"
-        class="btn-xl text-uppercase"
-        label="START SCAN"
-        :loading="SubmitLoading"
-        @click="ScanFace()"
-    >
-        <template v-slot:loading>
-            <q-spinner-puff />
-        </template>
-    </q-btn>
-</q-page-sticky>
-  </div> -->
-    <!-- <div class="camera-wrap">
-        <SimpleVueCamera ref="camera" class="camera-view mirror"/>
-    <div class="overlay">
-      <div class="mask"></div>
-      <div class="face-guide">
-        <div class="hint">Align your face inside the frame</div>
-        <div class="crosshair"></div>
-
-      </div>
-    </div>
-        <q-page-sticky position="top" :offset="[0, 0]" class="full-width full-height flex flex-center">
-    <q-btn
-        unelevated
-        size="xl"
-        color="primary"
-        class="btn-xl text-uppercase"
-        label="START SCAN"
-        :loading="SubmitLoading"
-        @click="ScanFace()"
-    >
-        <template v-slot:loading>
-            <q-spinner-puff />
-        </template>
-    </q-btn>
-</q-page-sticky>
-
-        <q-page-sticky position="top-right" :offset="[18, 18]">
-           <q-card class="no-shadow radius-md" style="width: 250px;">
-                <q-card-section>
-                    <div class="text-body1 text-bold">Face Recognition</div>
-                    <div class="text-caption">Please position your face within the camera frame and smile clearly.</div>
-                </q-card-section>
-            </q-card>
-        </q-page-sticky>
-    </div> -->
 </template>
 <script setup>
 import { ref, onMounted, onBeforeUnmount, onBeforeMount, watch, reactive, computed } from 'vue';
@@ -103,6 +44,29 @@ import SimpleVueCamera from 'simple-vue-camera';
 
 const camera = ref(null);
 
+const cameraConstraints = ref({
+    video: {
+        facingMode: 'user'
+    }
+})
+const ToggleCamera = async () => {
+  const currentMode = cameraConstraints.value.video.facingMode
+
+  // 👉 toggle
+  const newMode = currentMode === 'user' ? 'environment' : 'user'
+
+  cameraConstraints.value = {
+    video: {
+      facingMode: newMode
+    }
+  }
+
+  // 🔥 restart camera (required)
+  if (camera.value) {
+    await camera.value.stop()
+    await camera.value.start()
+  }
+}
 const loadModels = async () => {
     const MODEL_URL = window.location.origin + '/models';
     await Promise.all([
