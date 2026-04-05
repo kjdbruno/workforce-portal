@@ -22,6 +22,13 @@ const routes = [
     ]
   },
   {
+    path: '/dtr',
+    component: () => import('layouts/MainLayout.vue'),
+    children: [
+      { path: '', component: () => import('src/pages/DailyTimeRecordPage.vue'), name: 'dtr' }
+    ]
+  },
+  {
     path: '/my/leave',
     component: () => import('layouts/MainLayout.vue'),
     children: [

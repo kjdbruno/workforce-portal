@@ -38,8 +38,8 @@ const menuItems = [
     { icon: 'bi-house', label: 'home', to: '/'},
     { icon: 'bi-person-workspace', label: 'biometric', to: '/biometric' },
     { icon: 'bi-heart', label: 'fileleave', to: '/leave'  },
-    { icon: 'bi-bookmark-heart', label: 'myleave', to: '/my/leave' },
-    { icon: 'bi-alarm', label: 'mydtr', to: '/my/dtr' },
-    { icon: 'bi-wallet', label: 'mypayslip', to: '/my/payslip' },
+    // { icon: 'bi-bookmark-heart', label: 'myleave', to: '/my/leave' },
+    { icon: 'bi-alarm', label: 'dtr', to: '/dtr' },
+    // { icon: 'bi-wallet', label: 'mypayslip', to: '/my/payslip' },
 ]
 </script>

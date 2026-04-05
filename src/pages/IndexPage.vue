@@ -10,7 +10,7 @@
                                 <div class="text-body1 text-white">Welcome to the HRIS Employee Portal — your centralized platform for managing essential HR services efficiently and securely. Easily record Time In and Time Out, file leave requests, monitor leave balances and DTR records, and generate payslips anytime. Experience faster processes, transparency, and convenient access to your employment information.</div>
                             </div>
                             <div class="col">
-                                <div class="row q-col-gutter-xs items-center justify-center" v-if="!WelcomeLoading">
+                                <div class="row q-col-gutter-xs items-center justify-center" v-if="!WelcomeLoading && weatherIcon">
                                     <div>
                                         <q-avatar >
                                             <img :src="weatherIcon"/>

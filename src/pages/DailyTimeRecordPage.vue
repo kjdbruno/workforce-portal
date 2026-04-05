@@ -1,6 +1,6 @@
 <template>
     <q-page class="flex flex-center no-scroll">
-        <div class="camera-card q-pa-none">
+        <div class="camera-card q-pa-none" v-if="!DTRStore.isMatch">
             <div class="camera-container relative-position">
                 <div class="camera-view">
                     <SimpleVueCamera
@@ -13,7 +13,7 @@
                 <div class="absolute-full flex flex-center camera-overlay" v-show="!SubmitLoading && !CameraLoading">
                     <q-card class="no-shadow radius-md q-pa-lg">
                         <q-card-section class="text-center">
-                            <div class="text-h6 text-uppercase">scan to time in/time out</div>
+                            <div class="text-h6 text-uppercase">scan to file a leave</div>
                             <div class="text-caption">
                                 Please position your face within the camera frame and smile clearly.
                             </div>
@@ -53,16 +53,64 @@
                 </q-card>
             </q-inner-loading>
         </div>
+        <q-card v-else class="radius-md no-shadow q-pa-lg" style="width: 65%; box-shadow: rgba(0, 0, 0, 0.09) 0px 3px 12px;">
+            <q-card-section>
+                <div class="row q-col-gutter-lg">
+                    <div class="col-4">
+                        <q-card key="data-add" class="card card-profile no-shadow radius-sm q-mb-sm q-pb-lg">
+                            <div class="cover-photo">
+                                <img :src="randomCover" alt="Cover"/>
+                            </div>
+                            <q-card-section class="text-center profile-section">
+                                <img :src="DTRStore.employee?.photo" alt="Profile" class="profile-img" />
+                            </q-card-section>
+                            <q-card-section class="text-center q-pt-sm">
+                                <div class="text-caption text-uppercase text-white">{{ DTRStore.employee?.employee_no }}</div>
+                                <div class="text-h5 text-uppercase text-bold text-white">{{ FormatName(DTRStore.employee) }}</div>
+                                <div class="text-body1 text-uppercase text-white">{{ DTRStore.employee?.position }}</div>
+                                <div class="text-caption text-uppercase text-white">{{ DTRStore.employee?.employment_status }}</div>
+                            </q-card-section>
+                        </q-card>
+                    </div>
+                    <div class="col">
+                        <div class="text-h5 text-uppercase q-mb-sm">daily time record information</div>
+                        <div class="q-my-md">
+                            <div class="q-gutter-xs">
+                                <q-btn
+                                    v-for="(btn, index) in navs"
+                                    unelevated
+                                    :class="DTRStore.component === `${btn.component}` ? 'bg-primary text-white' : 'bg-accent'"
+                                    @click="DTRStore.component = `${btn.component}`"
+                                    size="xs"
+                                    :label="btn.label"
+                                />
+                            </div>
+                            <div class="q-my-md">
+                                <component :is="components[DTRStore.component]" :key="DTRStore.component" />
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </q-card-section>
+            <q-inner-loading :showing="DTRStore.SubmitLoading">
+                <q-card class="no-shadow radius-md q-pa-md">
+                    <q-card-section class="text-center">
+                        <div>
+                            <q-spinner-ios color="dark"/>
+                        </div>
+                        <div class="text-dark text-uppercase text-caption">we're working on it!</div>
+                    </q-card-section>
+                </q-card>
+            </q-inner-loading>
+        </q-card>
     </q-page>
 </template>
 <script setup>
 import { ref, onMounted, onBeforeUnmount, onBeforeMount, watch, reactive, computed } from 'vue';
 import { api } from 'src/boot/axios';
-import moment from 'moment';
-import Swal from 'sweetalert2';
 import { Toast } from 'src/boot/sweetalert'; 
-import { useEmployeeStore } from 'src/stores/employee-store'
-const EmployeeStore = useEmployeeStore();
+import { useDTRStore } from 'src/stores/dtr-store';
+const DTRStore = useDTRStore();
 
 const CameraLoading = ref(false);
 const SubmitLoading = ref(false);
@@ -143,125 +191,27 @@ const detectDescriptor = async () => {
     return { descriptor: detection.descriptor, img };
 }
 
-const applyBackendErrors = (backendErrors) => {
-    const errorsArray = Array.isArray(backendErrors)
-        ? backendErrors
-        : backendErrors?.errors || []
-    Object.keys(Errors).forEach(key => {
-        Errors[key].type = null
-        Errors[key].messages = []
-    })
-    errorsArray.forEach(err => {
-        if (Errors[err.path] !== undefined) {
-            Errors[err.path].type = true
-            Errors[err.path].messages.push(err.msg)
-        }
-    })
-}
-
-// SHA-256 hex using WebCrypto (browser)
-const sha256Hex = async (input) => {
-    const data = input instanceof ArrayBuffer
-        ? input
-        : (input instanceof Blob)
-        ? await input.arrayBuffer()
-        : new TextEncoder().encode(String(input)).buffer
-
-    const hashBuffer = await crypto.subtle.digest('SHA-256', data)
-    return [...new Uint8Array(hashBuffer)].map(b => b.toString(16).padStart(2, '0')).join('')
-}
-
-// Stable device id (stored once)
-const getDeviceId = () => {
-    const key = 'device_id'
-    let id = localStorage.getItem(key)
-    if (!id) {
-        id = crypto.randomUUID()
-        localStorage.setItem(key, id)
-    }
-    return id
-}
-
-// Try to get active camera label (camera_id)
-const getCameraId = async () => {
-    try {
-        const devices = await navigator.mediaDevices.enumerateDevices()
-        const cams = devices.filter(d => d.kind === 'videoinput')
-        // If permission granted, labels usually available
-        return cams[0]?.label || cams[0]?.deviceId || 'unknown-camera'
-    } catch {
-        return 'unknown-camera'
-    }
-}
-
-const employee = ref([]);
-const isMatch = ref(false);
-
 const ScanFace = async () => {
     SubmitLoading.value = true;
+    const result = await detectDescriptor();
+    const { passed, happy } = await detectSmile(6000, 0.7)
+
+    if (!passed) {
+        Toast.fire({
+            icon: "error",
+            html: `
+                <div class="text-subtitle1 text-bold text-uppercase">Liveness check failed!</div>
+                <div class="text-caption text-capitalize;">Please smile clearly to continue<div>
+            `
+        });
+        return
+    }
 
     try {
-
-        const { passed, happy } = await detectSmile(6000, 0.7)
-
-        if (!passed) {
-            Toast.fire({
-                icon: "error",
-                html: `
-                    <div class="text-subtitle1 text-bold text-uppercase">Liveness check failed!</div>
-                    <div class="text-caption text-capitalize;">Please smile clearly to continue<div>
-                `
-            });
-            return
-        }
-
-        const result = await detectDescriptor();
-
-        const blob = await camera.value.snapshot() // Blob
-        const imageHash = await sha256Hex(blob)
-
-        const deviceId = getDeviceId()
-        const cameraId = await getCameraId()
-
-        const lat = geo_lat.value
-        const lng = geo_lng.value
-
-        const descriptorArr = Array.from(result.descriptor)
-        const payloadForHash = {
-            employee_id: EmployeeStore?.employee?.id || null, // optional if you have it
-            descriptor: descriptorArr,                        // or you can omit if too large
-            geo_lat: lat,
-            geo_lng: lng,
-            camera_id: cameraId,
-            device_id: deviceId,
-            image_hash: imageHash,
-            captured_at: new Date().toISOString(),
-            source: 'Web',
-        }
-        const payloadHash = await sha256Hex(JSON.stringify(payloadForHash))
-
-        // Send as multipart/form-data
-        const form = new FormData()
-        form.append('descriptor', JSON.stringify(descriptorArr))
-        form.append('geo_lat', lat ?? '')
-        form.append('geo_lng', lng ?? '')
-        form.append('camera_id', cameraId)
-        form.append('device_id', deviceId)
-        form.append('image_hash', imageHash)
-        form.append('payload_hash', payloadHash)
-        form.append('source', 'Web')
-        form.append('captured_at', new Date().toISOString())
-        form.append('file', blob, `capture-${Date.now()}.jpg`)
-
-        const response = await api.post(`/portal/biometric`, form, {
-            headers: { 'Content-Type': 'multipart/form-data' }
-        })
-
-        const { match, employee, log, distance, liveness_passed } = response.data
-
-        // score example (0..1); adjust to your face distance scale
-        const recognitionScore = Math.max(0, Math.min(1, 1 - Number(distance || 0)))
-
+        const response = await api.post(`/portal/face`, {
+            descriptor: Array.from(result.descriptor)
+        });
+        const { match, record: emp, distance } = response.data;
         if (!match) {
             Toast.fire({
                 icon: "error",
@@ -271,24 +221,12 @@ const ScanFace = async () => {
                 `
             });
         } else {
-            const fullName = `${employee.first_name} ${employee.middle_name ?? ''} ${employee.last_name}`.toUpperCase()
-            const rawDateTime = new Date(`${log.captured_at}`)
-            const formattedDate = rawDateTime.toLocaleDateString('en-PH', { year: 'numeric', month: 'long', day: 'numeric' })
-            const formattedTime = rawDateTime.toLocaleTimeString('en-PH', { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: true })
-            Toast.fire({
-                icon: "success",
-                html: `
-                    <div class="text-subtitle1 text-bold text-uppercase">log recorded!</div>
-                    <div class="text-body1 text-capitalize;">${fullName}<div>
-                    <div class="text-caption text-capitalize;">${formattedDate} @ ${formattedTime}<div>
-                    <div class="text-caption text-capitalize;">Score: ${recognitionScore.toFixed(4)} | Liveness: ${liveness_passed ? 'Passed' : 'Failed'}<div>
-                `
-            });
+            DTRStore.employee = emp;
+            DTRStore.isMatch = true;
+            DTRStore.component = 'DTRLogComponent';
         }
-        emit('update:modelValue', null);
     } catch (e) {
         if (e.response && e.response.data) {
-            applyBackendErrors(e.response.data);
             Toast.fire({
                 icon: "error",
                 html: `
@@ -328,15 +266,13 @@ const detectSmile = async (timeoutMs = 5000, threshold = 0.7) => {
     }
 }
 
-onMounted(async () => {
-    await loadModels();
-    await PopulateData()
+onMounted(() => {
+    PopulateData()
 })
 
 const PopulateData = async (app) => {
-    employee.value = [];
-    isMatch.value = false;
-    await getLocation();
+    await loadModels();
+    getLocation();
 }
 
 const geo_lat = ref(null)
@@ -389,5 +325,98 @@ const StartedCamera = () => {
     CameraLoading.value = false;
 }
 
+const FormatName = (profile) => {
+    if (!profile) return '';
+    const firstname = profile.first_name || '';
+    const middlename = profile.middle_name
+        ? profile.middle_name.charAt(0).toUpperCase() + '.'
+        : '';
+    const lastname = profile.last_name || '';
+    const suffix = profile.suffix ? ` ${profile.suffix}` : '';
+    return `${firstname} ${middlename} ${lastname}${suffix}`.trim();
+}
+
+const TOTAL_COVERS = 25;
+
+const randomCover = ref('');
+
+onBeforeMount(() => {
+
+    DTRStore.isMatch = false;
+
+    const randomNumber = Math.floor(Math.random() * TOTAL_COVERS) + 1;
+    randomCover.value = new URL(
+        `../assets/cover/${randomNumber}.jpg`,
+        import.meta.url
+    ).href;
+})
+
+import DTRComponent from 'src/components/DTRComponent.vue';
+import DTRLogComponent from 'src/components/DTRLogComponent.vue';
+
+const components = {
+    DTRComponent,
+    DTRLogComponent
+};
+
+const navs = [
+    { component: 'DTRLogComponent', label: 'Daily Logs' },
+    { component: 'DTRComponent', label: 'Daily Time Record' },
+]
 
 </script>
+
+<style lang="css" scoped>
+.card-menu
+{
+    width: 150px;
+    height: 175px;
+}
+
+.card-profile {
+    overflow: hidden;
+    background: linear-gradient(
+        135deg,
+        #c94a4a 0%,
+        #a91f1f 65%,
+        #900201 100%
+    );
+}
+
+.cover-photo {
+        height: 175px;
+        width: 100%;
+        position: relative;
+}
+
+.cover-photo img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.cover-photo::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(
+        to bottom,
+        rgba(0, 0, 0, 0.15),
+        rgba(0, 0, 0, 0.55)
+    );
+}
+
+.profile-section {
+    margin-top: -80px;
+}
+
+.profile-img {
+    width: 150px;
+    height: 150px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 5px solid #ffffff;
+    background: #ffffff;
+    box-shadow: 0 12px 28px rgba(0, 0, 0, 0.35);
+}
+</style>
