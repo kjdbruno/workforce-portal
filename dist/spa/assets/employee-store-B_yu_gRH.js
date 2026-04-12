@@ -1,0 +1,1 @@
+import{aa as e}from"./index-CEGs76Cd.js";const o=e("employeeStore",{state:()=>({component:null,data:[],isMatch:!1}),getters:{},actions:{triggerChildSave(){this.saveEventCounter++}},persist:!0});export{o as u};
