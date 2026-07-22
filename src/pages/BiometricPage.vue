@@ -201,7 +201,6 @@ const ScanFace = async () => {
     SubmitLoading.value = true;
 
     try {
-
         const { passed, happy } = await detectSmile(6000, 0.7)
 
         if (!passed) {
@@ -216,8 +215,18 @@ const ScanFace = async () => {
         }
 
         const result = await detectDescriptor();
+        if (!result) {
+            Toast.fire({
+                icon: "error",
+                html: `
+                    <div class="text-subtitle1 text-bold text-uppercase">no face detected!</div>
+                    <div class="text-caption text-capitalize;">Please align your face and try again<div>
+                `
+            });
+            return
+        }
 
-        const blob = await camera.value.snapshot() // Blob
+        const blob = await camera.value.snapshot()
         const imageHash = await sha256Hex(blob)
 
         const deviceId = getDeviceId()
@@ -228,8 +237,8 @@ const ScanFace = async () => {
 
         const descriptorArr = Array.from(result.descriptor)
         const payloadForHash = {
-            employee_id: EmployeeStore?.employee?.id || null, // optional if you have it
-            descriptor: descriptorArr,                        // or you can omit if too large
+            employee_id: EmployeeStore?.employee?.id || null,
+            descriptor: descriptorArr,
             geo_lat: lat,
             geo_lng: lng,
             camera_id: cameraId,
@@ -240,7 +249,6 @@ const ScanFace = async () => {
         }
         const payloadHash = await sha256Hex(JSON.stringify(payloadForHash))
 
-        // Send as multipart/form-data
         const form = new FormData()
         form.append('descriptor', JSON.stringify(descriptorArr))
         form.append('geo_lat', lat ?? '')
@@ -259,7 +267,9 @@ const ScanFace = async () => {
 
         const { match, employee, log, distance, liveness_passed } = response.data
 
-        // score example (0..1); adjust to your face distance scale
+        // DEBUG: log this while testing on phone vs desktop to see the real gap
+        console.log('[FaceScan] distance:', distance, 'match:', match, 'device:', deviceId)
+
         const recognitionScore = Math.max(0, Math.min(1, 1 - Number(distance || 0)))
 
         if (!match) {
@@ -268,6 +278,7 @@ const ScanFace = async () => {
                 html: `
                     <div class="text-subtitle1 text-bold text-uppercase">not recognized!</div>
                     <div class="text-caption text-capitalize;">no matching employee found<div>
+                    <div class="text-caption text-capitalize;">Distance: ${Number(distance ?? -1).toFixed(4)}<div>
                 `
             });
         } else {
