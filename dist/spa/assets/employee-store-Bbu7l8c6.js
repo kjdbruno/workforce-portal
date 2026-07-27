@@ -1,0 +1,1 @@
+import{ac as e}from"./index-BC3Tay7a.js";const o=e("employeeStore",{state:()=>({component:null,data:[],isMatch:!1}),getters:{},actions:{triggerChildSave(){this.saveEventCounter++}},persist:!0});export{o as u};

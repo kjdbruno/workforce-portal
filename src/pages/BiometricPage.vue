@@ -52,6 +52,9 @@
                     </q-card-section>
                 </q-card>
             </q-inner-loading>
+            <q-card v-if="debugLog.length" class="q-pa-sm" style="max-height:200px; overflow-y:auto; font-size:10px;">
+    <div v-for="(line, i) in debugLog" :key="i">{{ line }}</div>
+</q-card>
         </div>
     </q-page>
 </template>
@@ -197,11 +200,21 @@ const getCameraId = async () => {
 const employee = ref([]);
 const isMatch = ref(false);
 
+const debugLog = ref([]) // add this near your other refs (CameraLoading, SubmitLoading, etc.)
+
+const logDebug = (label, data) => {
+    const entry = `${new Date().toLocaleTimeString()} — ${label}: ${JSON.stringify(data)}`
+    debugLog.value.unshift(entry)
+    console.log(label, data)
+}
+
 const ScanFace = async () => {
     SubmitLoading.value = true;
+    logDebug('Scan started', {})
 
     try {
         const { passed, happy } = await detectSmile(6000, 0.7)
+        logDebug('Smile check result', { passed, happy })
 
         if (!passed) {
             Toast.fire({
@@ -215,6 +228,8 @@ const ScanFace = async () => {
         }
 
         const result = await detectDescriptor();
+        logDebug('Descriptor detection', { detected: !!result })
+
         if (!result) {
             Toast.fire({
                 icon: "error",
@@ -228,16 +243,18 @@ const ScanFace = async () => {
 
         const blob = await camera.value.snapshot()
         const imageHash = await sha256Hex(blob)
+        logDebug('Snapshot captured', { blobSize: blob.size, imageHash })
 
         const deviceId = getDeviceId()
         const cameraId = await getCameraId()
+        logDebug('Device info', { deviceId, cameraId })
 
         const lat = geo_lat.value
         const lng = geo_lng.value
+        logDebug('Geolocation', { lat, lng })
 
         const descriptorArr = Array.from(result.descriptor)
         const payloadForHash = {
-            employee_id: EmployeeStore?.employee?.id || null,
             descriptor: descriptorArr,
             geo_lat: lat,
             geo_lng: lng,
@@ -261,18 +278,20 @@ const ScanFace = async () => {
         form.append('captured_at', new Date().toISOString())
         form.append('file', blob, `capture-${Date.now()}.jpg`)
 
+        logDebug('Sending request', { url: '/portal/biometric' })
+
         const response = await api.post(`/portal/biometric`, form, {
             headers: { 'Content-Type': 'multipart/form-data' }
         })
 
-        const { match, employee, log, distance, liveness_passed } = response.data
+        logDebug('Backend response received', response.data)
 
-        // DEBUG: log this while testing on phone vs desktop to see the real gap
-        console.log('[FaceScan] distance:', distance, 'match:', match, 'device:', deviceId)
+        const { match, employee, log, distance, liveness_passed } = response.data
 
         const recognitionScore = Math.max(0, Math.min(1, 1 - Number(distance || 0)))
 
         if (!match) {
+            logDebug('No match', { distance })
             Toast.fire({
                 icon: "error",
                 html: `
@@ -286,6 +305,9 @@ const ScanFace = async () => {
             const rawDateTime = new Date(`${log.captured_at}`)
             const formattedDate = rawDateTime.toLocaleDateString('en-PH', { year: 'numeric', month: 'long', day: 'numeric' })
             const formattedTime = rawDateTime.toLocaleTimeString('en-PH', { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: true })
+
+            logDebug('Match found', { fullName, distance, liveness_passed })
+
             Toast.fire({
                 icon: "success",
                 html: `
@@ -298,16 +320,26 @@ const ScanFace = async () => {
         }
         emit('update:modelValue', null);
     } catch (e) {
+        // Always log something — this used to fail silently on mobile when e.response was undefined
+        logDebug('CAUGHT ERROR', {
+            message: e.message,
+            code: e.code,
+            hasResponse: !!e.response,
+            status: e.response?.status,
+            responseData: e.response?.data,
+        })
+
         if (e.response && e.response.data) {
             applyBackendErrors(e.response.data);
-            Toast.fire({
-                icon: "error",
-                html: `
-                    <div class="text-h6 text-bold text-uppercase">Request Failed</div>
-                    <div class="text-caption">Something went wrong.</div>
-                `
-            })
         }
+
+        Toast.fire({
+            icon: "error",
+            html: `
+                <div class="text-h6 text-bold text-uppercase">Request Failed</div>
+                <div class="text-caption">${e.message || 'Something went wrong.'}</div>
+            `
+        })
     } finally {
         SubmitLoading.value = false;
     }
