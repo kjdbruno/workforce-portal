@@ -53,9 +53,9 @@ const isActive = (label) => route.name?.toLowerCase() === label.toLowerCase();
 const menuItems = [
     { icon: 'bi-house', label: 'home', to: '/'},
     { icon: 'bi-person-workspace', label: 'biometric', to: '/biometric' },
-    { icon: 'bi-heart', label: 'fileleave', to: '/leave'  },
+    // { icon: 'bi-heart', label: 'fileleave', to: '/leave'  },
     // { icon: 'bi-bookmark-heart', label: 'myleave', to: '/my/leave' },
-    { icon: 'bi-alarm', label: 'dtr', to: '/dtr' },
+    // { icon: 'bi-alarm', label: 'dtr', to: '/dtr' },
     // { icon: 'bi-wallet', label: 'mypayslip', to: '/my/payslip' },
 ]
 </script>
