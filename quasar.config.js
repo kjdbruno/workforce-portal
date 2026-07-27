@@ -53,7 +53,7 @@ export default defineConfig((/* ctx */) => {
       // analyze: true,
       env: {
         VUE_APP_API_KEY: JSON.stringify('7fcb21ea7e5b4a2dbe30cb18730aeaf5d5e5c7ce45f962376355c1c4f07c8362'), // MUST MATCH BACKEND API_KEY
-        // VUE_APP_BACKEND_URL: 'http://192.168.68.53:3000'
+        // VUE_APP_BACKEND_URL: 'http://localhost:3000'
         VUE_APP_BACKEND_URL: 'https://hris-ccmi.com'
       },
       // rawDefine: {}
@@ -72,7 +72,7 @@ export default defineConfig((/* ctx */) => {
 
     // Full list of options: https://v2.quasar.dev/quasar-cli-vite/quasar-config-file#devserver
     devServer: {
-      https: true,
+      // https: true,
       open: true // opens browser window automatically
     },
 
