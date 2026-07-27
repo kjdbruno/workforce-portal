@@ -287,7 +287,6 @@ async function ScanFace() {
         logDebug('Geolocation', { lat, lng })
 
         const descriptorArr = Array.from(result.descriptor)
-        const capturedAt = new Date().toISOString()
 
         const payload = {
             descriptor: descriptorArr,
@@ -296,8 +295,7 @@ async function ScanFace() {
             camera_id: cameraId,
             device_id: deviceId,
             image_path: imageBase64, // base64 image itself, stored under image_path
-            source: 'Web',
-            captured_at: capturedAt
+            source: 'Web'
         }
 
         logDebug('Sending request', { url: '/portal/biometric' })
